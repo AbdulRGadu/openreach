@@ -1,0 +1,67 @@
+{
+  "name": "Outreach Studio - Lead intake (Google Sheets)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Lead intake\n1. Create an **Outreach API** credential (Header Auth): name `Authorization`, value `Bearer <API_KEY>`.\n2. Point the trigger at your leads spreadsheet (columns: email, first_name, last_name, role, company, website, industry, notes).\n3. Replace `OUTREACH_BASE_URL` in the HTTP node with your Worker URL (e.g. https://outreach-studio.<your-subdomain>.workers.dev).\n4. Activate. New rows are deduped and suppression-checked by the Worker; per-row results come back in the response.",
+        "height": 260,
+        "width": 380
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "pollTimes": { "item": [{ "mode": "everyX", "value": 5, "unit": "minutes" }] },
+        "documentId": { "__rl": true, "mode": "list", "value": "" },
+        "sheetName": { "__rl": true, "mode": "list", "value": "" },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "New sheet row",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [440, 120],
+      "credentials": { "googleSheetsTriggerOAuth2Api": { "name": "Google Sheets account" } }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const pick = (j, ...keys) => { for (const k of keys) { if (j[k] !== undefined && j[k] !== null && String(j[k]).trim() !== '') return String(j[k]).trim(); } return ''; };\nconst leads = items.map(({ json }) => ({\n  email: pick(json, 'email', 'Email', 'EMAIL'),\n  firstName: pick(json, 'first_name', 'firstName', 'First Name'),\n  lastName: pick(json, 'last_name', 'lastName', 'Last Name'),\n  role: pick(json, 'role', 'Role', 'title', 'Title'),\n  company: pick(json, 'company', 'Company'),\n  companyWebsite: pick(json, 'website', 'Website', 'companyWebsite'),\n  industry: pick(json, 'industry', 'Industry'),\n  source: 'sheets',\n  notes: pick(json, 'notes', 'Notes'),\n})).filter((l) => l.email);\nconst batches = [];\nfor (let i = 0; i < leads.length; i += 50) batches.push({ json: { leads: leads.slice(i, i + 50) } });\nreturn batches;"
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Map rows to leads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "OUTREACH_BASE_URL/api/leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "POST /api/leads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 120],
+      "credentials": { "httpHeaderAuth": { "name": "Outreach API" } }
+    }
+  ],
+  "connections": {
+    "New sheet row": { "main": [[{ "node": "Map rows to leads", "type": "main", "index": 0 }]] },
+    "Map rows to leads": { "main": [[{ "node": "POST /api/leads", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}

@@ -1,0 +1,27 @@
+{
+  "name": "outreach-studio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI-assisted, human-approved outreach workspace for independent businesses",
+  "type": "module",
+  "packageManager": "pnpm@10.11.0",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "workerd", "sharp"]
+  },
+  "scripts": {
+    "dev": "wrangler dev --port 8788 --ip 127.0.0.1",
+    "deploy": "wrangler deploy",
+    "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "db:migrate:local": "wrangler d1 migrations apply outreach-studio-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply outreach-studio-db --remote"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250628.0",
+    "typescript": "^6.0.0",
+    "wrangler": "^4.87.0"
+  }
+}

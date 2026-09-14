@@ -1,0 +1,9 @@
+# Copy to .dev.vars for local use. Keep real values out of git.
+DASHBOARD_PIN=
+API_KEY=
+CF_AI_TOKEN=
+ZOHO_CLIENT_ID=
+ZOHO_CLIENT_SECRET=
+ZOHO_REFRESH_TOKEN=
+N8N_WEBHOOK_SECRET=
+UNSUB_SECRET=

@@ -1,0 +1,16 @@
+node_modules/
+# Local credentials and deployment state
+.env
+.env.*
+!.env.example
+!.env.*.example
+.wrangler/
+.dev.vars
+secrets*.txt
+*.pem
+*.key
+*.p12
+*.pfx
+dist/
+*.log
+.DS_Store

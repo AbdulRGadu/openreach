@@ -1,0 +1,2041 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Outreach Studio · AI outreach workspace</title>
+<style>
+  :root {
+    --bg: #090f1b; --panel: #101a2c; --panel-2: #162440; --line: #263754;
+    --text: #e8eff9; --muted: #91a2bd; --accent: #43e7a3; --accent-2: #74f0bb;
+    --warn: #f4b74a; --bad: #ff6e6e; --info: #72b7ff;
+    --rail: 244px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  button { font: inherit; cursor: pointer; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--text); border-radius: 8px; padding: 6px 12px; }
+  button:hover { border-color: var(--accent); }
+  button:active { transform: translateY(1px); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #04110b; font-weight: 600; }
+  button.danger { border-color: #7f1d1d; color: #fca5a5; }
+  button:disabled { opacity: .5; cursor: wait; }
+  .spinner { width: 13px; height: 13px; display: inline-block; border: 2px solid currentColor;
+    border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  input, select, textarea { font: inherit; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  textarea { width: 100%; resize: vertical; }
+  .hidden { display: none !important; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+
+  /* Login */
+  #login { min-height: 100dvh; display: flex; align-items: center; justify-content: center; }
+  #login form { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 28px; width: min(92vw, 380px); display: flex; flex-direction: column; gap: 12px; }
+  #login h1 { margin: 0 0 4px; font-size: 18px; }
+
+  /* Layout */
+  #app { min-height: 100dvh; }
+  #app > header { position: fixed; inset: 0 auto 0 0; z-index: 5; width: var(--rail);
+    display: flex; flex-direction: column; padding: 24px 16px 18px; border-right: 1px solid var(--line);
+    background: linear-gradient(180deg, #0f1a2d 0%, #0c1526 100%); }
+  .head-row { display: flex; flex-direction: column; align-items: stretch; gap: 0; flex: 0; }
+  header h1 { font-size: 19px; letter-spacing: -.02em; margin: 0 6px 4px; }
+  header h1 span { color: var(--accent); }
+  #stats { display: grid; gap: 7px; margin: 22px 0 0; }
+  .stat { background: rgba(22,36,64,.62); border: 1px solid var(--line); border-radius: 9px;
+    padding: 8px 10px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+  .stat b { color: var(--text); font-size: 12px; }
+  .stat.warn { border-color: rgba(244,183,74,.75); color: var(--warn); background: rgba(86,57,13,.2); }
+  nav { display: flex; flex-direction: column; gap: 4px; margin-top: 26px; }
+  nav button { border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 9px;
+    padding: 10px 11px; text-align: left; display: flex; align-items: center; gap: 10px; }
+  nav button::before { width: 18px; text-align: center; color: #6f83a3; font-size: 14px; }
+  nav button[data-tab="pipeline"]::before { content: "⌂"; }
+  nav button[data-tab="campaigns"]::before { content: "◫"; }
+  nav button[data-tab="drafts"]::before { content: "✎"; }
+  nav button[data-tab="queue"]::before { content: "↗"; }
+  nav button[data-tab="sent"]::before { content: "✓"; }
+  nav button[data-tab="replies"]::before { content: "◌"; }
+  nav button[data-tab="suppression"]::before { content: "⊘"; }
+  nav button[data-tab="add"]::before { content: "+"; }
+  nav button[data-tab="settings"]::before { content: "⚙"; }
+  nav button:hover { border-color: var(--line); background: rgba(30,51,83,.55); }
+  nav button.active { color: var(--text); border-color: rgba(67,231,163,.28); background: rgba(67,231,163,.1); }
+  nav button.active::before { color: var(--accent); }
+  #logout { margin: auto 0 0; width: 100%; text-align: left; }
+  main { padding: 34px 42px 88px; max-width: 1440px; margin: 0 0 0 var(--rail); }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 13px;
+    padding: 15px 17px; margin-bottom: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; background: var(--panel-2); }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--panel-2); }
+  .table-wrap { overflow-x: auto; border-radius: 12px; }
+
+  /* Chips */
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 11px;
+    border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .st-new { color: var(--info); border-color: var(--info); }
+  .st-scored, .st-drafted { color: var(--accent-2); border-color: var(--accent-2); }
+  .st-approved, .st-queued, .st-sending, .st-needs_review { color: var(--warn); border-color: var(--warn); }
+  .st-sent { color: var(--text); }
+  .st-replied_positive, .st-meeting_requested, .st-asked_for_more_info, .st-referred,
+  .cl-positive_interest, .cl-meeting_request, .cl-asks_for_more_info, .cl-referral_to_colleague
+    { color: var(--accent); border-color: var(--accent); font-weight: 600; }
+  .st-suppressed, .st-not_interested, .st-failed, .st-rejected,
+  .cl-remove_me, .cl-not_interested, .cl-bounce_or_auto_reply { color: var(--bad); border-color: var(--bad); }
+  .st-send_unknown { color: var(--warn); border-color: var(--warn); font-weight: 700; }
+  .cl-not_now, .cl-out_of_office, .cl-unclear { color: var(--muted); }
+
+  /* Drawer & modal */
+  .overlay { position: fixed; inset: 0; background: rgba(3,7,15,.6); z-index: 8; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(96vw, 560px);
+    background: var(--panel); border-left: 1px solid var(--line); z-index: 9;
+    overflow-y: auto; padding: 18px 20px; }
+  .modal { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; }
+  .modal-box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    width: min(96vw, 1100px); max-height: 94dvh; overflow-y: auto; padding: 20px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .grow { flex: 1; }
+  .kv { display: grid; grid-template-columns: 130px 1fr; gap: 4px 10px; margin: 10px 0; }
+  .kv div:nth-child(odd) { color: var(--muted); font-size: 12px; padding-top: 2px; }
+  pre { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; white-space: pre-wrap; word-break: break-word; font: 13px/1.55 ui-monospace, Consolas, monospace; }
+  .timeline { border-left: 2px solid var(--line); margin: 8px 0 8px 6px; padding-left: 14px; }
+  .timeline > div { margin-bottom: 6px; font-size: 12px; }
+  h2 { font-size: 15px; margin: 18px 0 8px; }
+  h3 { font-size: 13px; margin: 14px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+  #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: var(--panel-2); border: 1px solid var(--accent); color: var(--text);
+    padding: 9px 16px; border-radius: 10px; z-index: 20; transition: opacity .3s; opacity: 0; pointer-events: none; }
+  #toast.bad { border-color: var(--bad); }
+  #toast.show { opacity: 1; }
+  .empty { color: var(--muted); text-align: center; padding: 32px 0; }
+  .page-intro { display: flex; align-items: flex-end; gap: 18px; margin-bottom: 22px; }
+  .page-intro h2 { font-size: 27px; letter-spacing: -.035em; margin: 2px 0 4px; }
+  .page-intro p { margin: 0; max-width: 650px; color: var(--muted); }
+  .eyebrow { color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .11em; }
+  .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 11px; margin-bottom: 15px; }
+  .metric { position: relative; overflow: hidden; background: linear-gradient(145deg, #121f35, #10192b); border: 1px solid var(--line); border-radius: 13px; padding: 16px 17px; min-height: 94px; }
+  .metric::after { content: ""; position: absolute; inset: auto 0 0; height: 3px; background: rgba(114,183,255,.25); }
+  .metric b { display: block; font-size: 28px; line-height: 1.05; margin: 6px 0 3px; letter-spacing: -.03em; }
+  .metric.alert { border-color: rgba(244,183,74,.72); background: linear-gradient(145deg, #241d12, #171721); }
+  .metric.alert::after { background: var(--warn); }
+  .metric:nth-child(2)::after { background: var(--accent); }
+  .metric:nth-child(4)::after { background: #a78bfa; }
+  .attention-card { border-color: rgba(244,183,74,.4); background: linear-gradient(145deg, #171b27, #131a29); }
+  .attention-card > .row:first-child { margin-bottom: 3px; }
+  .attention-title { font-size: 15px; letter-spacing: -.01em; }
+  .attention-subtitle { margin: 0 0 9px; color: var(--muted); font-size: 12px; }
+  .attention-clear { padding: 15px 17px; }
+  .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(67,231,163,.12); }
+  .overview-toolbar { padding: 11px 12px; border: 1px solid var(--line); border-radius: 11px; background: rgba(16,26,44,.7); }
+  .action-cell { display: flex; gap: 6px; flex-wrap: wrap; }
+  .reason { color: var(--muted); max-width: 360px; }
+  .status-banner { border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; margin-bottom: 10px; }
+  .status-banner.warn { border-color: var(--warn); background: rgba(245,158,11,.08); }
+  .status-banner.good { border-color: var(--accent); background: rgba(16,185,129,.08); }
+  .feedback { min-height: 21px; margin: 8px 0 0; color: var(--info); }
+  .feedback.success { color: var(--accent-2); }
+  .feedback.bad, .warning { color: var(--warn); }
+  .warning { border-left: 3px solid var(--warn); padding: 7px 10px; background: rgba(245,158,11,.08); }
+  .review-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 18px; }
+  .strategy-panel { border-left: 1px solid var(--line); padding-left: 18px; }
+  .email-preview { min-height: 260px; padding: 18px; background: #f8fafc; color: #172033;
+    border-color: #d7deea; font: 14px/1.65 Arial, Helvetica, sans-serif; }
+  .quality-pass { color: var(--accent-2); }
+  .warning-list { margin: 8px 0; padding-left: 20px; color: var(--warn); }
+  .warning-list li + li { margin-top: 4px; }
+  .button-stack { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .signature-frame { width: 100%; height: 190px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .grid.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .grid label, #onboarding label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font-size: 12px; }
+  .grid input, .grid textarea, #onboarding input, #onboarding textarea { width: 100%; }
+  .setup-steps { display: flex; gap: 6px; margin: 16px 0; }
+  .setup-steps span { flex: 1; height: 4px; border-radius: 999px; background: var(--line); }
+  .setup-steps span.active { background: var(--accent); }
+  #onboarding .wizard-page { display: grid; gap: 13px; }
+  #onboarding .wizard-page.hidden { display: none; }
+  @media (max-width: 600px) { .grid.two { grid-template-columns: 1fr; } }
+  @media (max-width: 980px) {
+    :root { --rail: 212px; }
+    main { padding-inline: 28px; }
+  }
+  @media (max-width: 760px) {
+    #app > header { position: sticky; inset: auto; width: auto; display: block; padding: 14px 14px 0;
+      border-right: 0; border-bottom: 1px solid var(--line); }
+    .head-row { display: block; }
+    header h1 { margin: 0 0 12px; }
+    #stats { display: flex; gap: 6px; margin: 0 0 11px; overflow-x: auto; }
+    .stat { min-width: 128px; }
+    nav { flex-direction: row; gap: 2px; margin-top: 0; overflow-x: auto; padding-bottom: 0; }
+    nav button { flex: 0 0 auto; border-radius: 8px 8px 0 0; padding: 8px 11px; }
+    nav button::before { display: none; }
+    #logout { position: absolute; right: 14px; top: 14px; width: auto; }
+    main { margin-left: 0; padding: 24px 14px 72px; }
+    .page-intro { align-items: flex-start; flex-direction: column; gap: 10px; }
+    .review-grid { grid-template-columns: 1fr; }
+    .strategy-panel { border-left: 0; border-top: 1px solid var(--line); padding: 14px 0 0; }
+    .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.two { grid-template-columns: 1fr; }
+    th, td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login" class="hidden">
+  <form id="login-form">
+    <h1>Outreach <span style="color:var(--accent)">Studio</span></h1>
+    <p class="muted small" style="margin:0">Enter the 6-digit PIN to open the dashboard.</p>
+    <input id="login-token" type="password" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="6-digit PIN" autocomplete="one-time-code" required>
+    <button class="primary" type="submit">Open dashboard</button>
+    <p id="login-error" class="small hidden" style="color:var(--bad);margin:0"></p>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="head-row">
+      <h1>Outreach <span>Studio</span></h1>
+      <span id="demo-badge" class="chip st-needs_review hidden" style="width:max-content">Demo · sending disabled</span>
+      <div id="stats"></div>
+    </div>
+    <nav id="tabs">
+      <button data-tab="pipeline" class="active">Overview</button>
+      <button data-tab="campaigns">Campaigns</button>
+      <button data-tab="drafts">Drafts</button>
+      <button data-tab="queue">Queue</button>
+      <button data-tab="sent">Sent</button>
+      <button data-tab="replies">Replies</button>
+      <button data-tab="suppression">Suppression</button>
+      <button data-tab="add">Add lead</button>
+      <button data-tab="settings">Settings</button>
+    </nav>
+    <button id="logout" class="small" title="Forget the dashboard PIN on this browser">Lock</button>
+  </header>
+  <div id="onboarding" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+    <div class="modal-box" style="max-width:760px">
+      <div class="row"><div class="grow"><div class="eyebrow">First-time setup</div><h2 id="onboarding-title" style="font-size:24px;margin:5px 0">Welcome to Outreach Studio</h2></div><span id="onboarding-step-count" class="chip">Step 1 of 4</span></div>
+      <div class="setup-steps" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <p id="onboarding-copy" class="muted" style="margin:0 0 14px">Start with a fictional example or configure your own business. Demo mode can generate drafts but never send.</p>
+      <p id="onboarding-feedback" class="feedback" aria-live="polite"></p>
+      <section id="onboarding-page-1" class="wizard-page">
+        <div class="card" style="margin:0"><b>Try the safe demo</b><p class="muted small" style="margin:6px 0 0">Loads a fictional software and visual-design studio plus sample leads. Nothing can be sent while Demo mode is on.</p><div class="row" style="margin-top:10px"><button id="onboarding-demo" class="primary">Explore the demo</button></div></div>
+        <div class="card" style="margin:0"><b>Set up your business</b><p class="muted small" style="margin:6px 0 0">Add your business details, audience, offer, and Zoho-approved sender. You can edit everything later in Settings.</p><div class="row" style="margin-top:10px"><button id="onboarding-real" class="primary">Set up my business</button></div></div>
+      </section>
+      <section id="onboarding-page-2" class="wizard-page hidden">
+        <div class="grid two">
+          <label>Business name<input id="setup-business-name" autocomplete="organization"></label>
+          <label>Industry<input id="setup-industry" placeholder="e.g. software and visual design"></label>
+          <label style="grid-column:1/-1">Website (optional)<input id="setup-website" type="url" placeholder="https://example.com"></label>
+          <label style="grid-column:1/-1">What does your business do?<textarea id="setup-description" rows="3" placeholder="Describe your work and the outcome you help create."></textarea></label>
+          <label>Services, one per line<textarea id="setup-services" rows="3" placeholder="Product development&#10;Visual design"></textarea></label>
+          <label>Voice and tone<input id="setup-tone" placeholder="Helpful, concise, and professional"></label>
+          <label>Target geography (optional)<input id="setup-geography" placeholder="Remote, Nigeria, or global"></label>
+        </div>
+      </section>
+      <section id="onboarding-page-3" class="wizard-page hidden">
+        <div class="grid two">
+          <label style="grid-column:1/-1">Who is your ideal customer?<textarea id="setup-ideal-customer" rows="3" placeholder="Who you want to help and why."></textarea></label>
+          <label>Target industries, one per line<textarea id="setup-industries" rows="3"></textarea></label>
+          <label>Target roles, one per line<textarea id="setup-roles" rows="3"></textarea></label>
+          <label>Customer pain points, one per line<textarea id="setup-pain-points" rows="3"></textarea></label>
+          <label>Differentiators, one per line<textarea id="setup-differentiators" rows="3"></textarea></label>
+          <label style="grid-column:1/-1">What useful offer can you make?<input id="setup-offer" placeholder="A short audit, sample, checklist, or useful introduction"></label>
+          <label style="grid-column:1/-1">One clear CTA question<input id="setup-cta" placeholder="Would it be useful if I sent it over?"></label>
+          <label style="grid-column:1/-1">Claims to avoid, one per line<textarea id="setup-claims" rows="2" placeholder="Anything you cannot substantiate about a prospect"></textarea></label>
+        </div>
+      </section>
+      <section id="onboarding-page-4" class="wizard-page hidden">
+        <div class="grid two">
+          <label style="grid-column:1/-1">Zoho-approved sender and reply email<input id="setup-sender-email" type="email" required placeholder="you@yourbusiness.com" autocomplete="email"></label>
+          <label>Sender display name<input id="setup-sender-display" autocomplete="organization"></label>
+          <label>Your name in the signoff (optional)<input id="setup-sender-name" autocomplete="name"></label>
+          <label>Greeting<input id="setup-greeting" value="Hi"></label>
+          <label>Greeting when no name is known<input id="setup-fallback-greeting" value="Hello"></label>
+          <label>Signoff<input id="setup-signoff" value="Best regards"></label>
+        </div>
+        <div class="warning">Zoho API credentials are configured as Cloudflare Worker secrets; this form stores sender wording only. Verify your sender in Zoho before enabling delivery. <a href="/zoho-setup.html" target="_blank" rel="noreferrer">Open the Zoho setup guide</a>.</div>
+        <div class="card" style="margin:0"><label style="display:flex;flex-direction:row;align-items:flex-start;gap:9px;color:var(--text);font-size:13px"><input id="setup-zoho-approved" type="checkbox" style="margin-top:3px"> I confirm this sender is approved in Zoho Mail and the display name matches its “Send Mail As” identity.</label></div>
+      </section>
+      <div class="row" style="justify-content:space-between;margin-top:16px">
+        <button id="onboarding-back" class="hidden">Back</button>
+        <div class="row grow" style="justify-content:flex-end"><button id="onboarding-next" class="primary hidden">Continue</button><button id="onboarding-finish" class="primary hidden">Save and open workspace</button></div>
+      </div>
+    </div>
+  </div>
+  <main>
+    <section id="tab-pipeline">
+      <div class="page-intro">
+        <div>
+          <div class="eyebrow">Overview · command center</div>
+          <h2>What needs your attention?</h2>
+          <p>See today’s send capacity, queue health, and replies needing a human decision. Every item below includes a reason and a next action.</p>
+        </div>
+      </div>
+      <div id="overview-summary" class="metric-grid" aria-live="polite"></div>
+      <div id="overview-attention"></div>
+      <div class="toolbar overview-toolbar">
+        <select id="f-status">
+          <option value="">All statuses</option>
+        </select>
+        <select id="f-segment">
+          <option value="">All segments</option>
+        </select>
+        <input id="f-q" placeholder="Search email, name, company…" style="min-width:220px">
+        <button id="f-apply" class="primary">Filter</button>
+        <button id="f-advance" title="Score new leads and draft fit ones now">Run pipeline now</button>
+        <select id="lead-campaign" aria-label="Campaign for selected leads"><option value="">Assign selected to campaign…</option></select>
+        <button id="lead-assign">Assign</button>
+        <span id="lead-count" class="muted small"></span>
+      </div>
+      <div class="table-wrap"><table id="leads-table">
+        <thead><tr>
+          <th></th><th>Contact</th><th>Company</th><th>Segment</th><th>Fit</th><th>Status</th><th>Reply</th><th>Updated</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <div class="toolbar" style="margin-top:10px">
+        <button id="page-prev">‹ Prev</button>
+        <span id="page-info" class="muted small"></span>
+        <button id="page-next">Next ›</button>
+      </div>
+    </section>
+
+    <section id="tab-drafts" class="hidden">
+      <div class="toolbar">
+        <span class="muted">Every email is reviewed here before it can be sent.</span>
+        <button id="drafts-refresh" style="margin-left:auto">Refresh</button>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div class="toolbar">
+          <input id="draft-filter-company" placeholder="Filter company">
+          <input id="draft-filter-industry" placeholder="Filter industry">
+          <select id="draft-view" aria-label="Draft list view"><option value="review">Drafts to review</option><option value="sent">Sent list</option></select>
+          <input id="draft-date-from" type="date" aria-label="Generated from" title="Generated from">
+          <input id="draft-date-to" type="date" aria-label="Generated to" title="Generated to">
+          <select id="draft-date-sort" aria-label="Sort by generated date"><option value="desc">Newest first</option><option value="asc">Oldest first</option></select>
+          <select id="draft-filter-segment" aria-label="Filter company segment">
+            <option value="">All segments</option>
+            <option value="fintech">fintech</option><option value="healthcare">healthcare</option>
+            <option value="education">education</option><option value="logistics">logistics</option>
+            <option value="saas">saas</option><option value="ecommerce">ecommerce</option>
+            <option value="professional_services">professional services</option><option value="general_business">general business</option>
+          </select>
+          <label class="muted small">Queue plan <select id="draft-queue-plan"><option value="10">Starter · 10 daily</option><option value="20">Growth · 20 daily</option><option value="custom">Custom</option></select></label>
+          <label class="muted small">Amount <input id="draft-send-amount" type="number" min="1" max="200" value="10" style="width:70px"></label>
+          <label class="muted small">Start <input id="draft-queue-start" type="datetime-local"></label>
+          <button id="drafts-select-visible">Select visible</button>
+          <button id="drafts-clear-selection">Clear</button>
+          <button id="drafts-regenerate-all">Regenerate visible</button>
+          <button id="drafts-send-selected" class="primary">Approve &amp; queue selected</button>
+        </div>
+        <p id="drafts-selection-status" class="muted small" style="margin:6px 0 0">0 selected</p>
+      </div>
+      <div id="drafts-list"></div>
+    </section>
+
+    <section id="tab-replies" class="hidden">
+      <div class="toolbar">
+        <select id="r-class">
+          <option value="">All classifications</option>
+        </select>
+        <button id="replies-refresh" class="primary">Filter</button>
+      </div>
+      <h2>Next Step</h2>
+      <p class="muted small">Positive replies stay human-controlled. No reply is sent automatically.</p>
+      <div id="next-steps"></div>
+      <h2>All replies</h2>
+      <div id="replies-list"></div>
+      <details class="card" style="margin-top:12px">
+        <summary>Reply ingestion debug</summary>
+        <div class="row" style="margin-top:10px">
+          <button id="reply-debug-refresh">Refresh debug log</button>
+          <span id="reply-debug-summary" class="muted small"></span>
+        </div>
+        <pre id="reply-debug-output">Refresh to inspect recent n8n ingests.</pre>
+      </details>
+    </section>
+
+    <section id="tab-suppression" class="hidden">
+      <div class="card">
+        <div class="row">
+          <select id="s-kind"><option value="email">email</option><option value="domain">domain</option></select>
+          <input id="s-value" class="grow" placeholder="person@company.com or company.com">
+          <input id="s-reason" placeholder="reason (optional)">
+          <button id="s-add" class="primary">Suppress</button>
+        </div>
+        <p class="muted small" style="margin:8px 0 0">Suppressed addresses are blocked at intake, draft, approve, and send.</p>
+      </div>
+      <div class="table-wrap"><table id="sup-table">
+        <thead><tr><th>Kind</th><th>Value</th><th>Reason</th><th>Added</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </section>
+
+    <section id="tab-add" class="hidden">
+      <div class="card" style="max-width:560px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <input id="a-email" placeholder="Email *" style="grid-column:1/-1">
+          <textarea id="a-bulk-emails" placeholder="Paste a TSV/CSV table with headers, or mixed text containing emails. Structured columns like first_name, company_domain, position, linkedin, and fit_note are preserved." rows="6" style="grid-column:1/-1"></textarea>
+          <p class="muted small" style="grid-column:1/-1;margin:-4px 0 0">TSV/CSV rows use each row's details. Plain mixed text falls back to email extraction. Duplicates are removed.</p>
+          <input id="a-first" placeholder="First name">
+          <input id="a-last" placeholder="Last name">
+          <input id="a-role" placeholder="Role (e.g. Head of IT)">
+          <input id="a-company" placeholder="Company">
+          <input id="a-website" placeholder="Company website">
+          <input id="a-industry" placeholder="Industry (e.g. software and design)">
+          <input id="a-sub-industry" placeholder="Sub-industry (optional)">
+          <input id="a-country" placeholder="Country">
+          <select id="a-source">
+            <option value="manual">manual</option><option value="referral">referral</option>
+            <option value="directory">directory</option><option value="linkedin">linkedin</option>
+            <option value="csv">csv</option><option value="sheets">sheets</option><option value="form">form</option>
+          </select>
+          <textarea id="a-notes" placeholder="Notes (anything useful for scoring/personalization)" rows="3" style="grid-column:1/-1"></textarea>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button id="a-save" class="primary">Add lead</button>
+          <span id="a-result" class="muted small"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-settings" class="hidden">
+      <div class="card" style="max-width:900px">
+        <div class="row"><div class="grow"><h2 style="margin:0">Business profile</h2><p class="muted small" style="margin:4px 0">This context shapes lead scoring, drafts, and reply suggestions. New drafts use the latest saved profile.</p></div><span id="workspace-profile-status" class="chip"></span></div>
+        <div class="grid two" style="margin-top:12px">
+          <label>Business name<input id="workspace-business-name" placeholder="Your business name"></label>
+          <label>Industry<input id="workspace-industry" placeholder="e.g. software services"></label>
+          <label style="grid-column:1/-1">Website<input id="workspace-website" placeholder="https://example.com"></label>
+          <label style="grid-column:1/-1">Business description<textarea id="workspace-description" rows="3" placeholder="What you do and the outcome you create."></textarea></label>
+          <label>Services, one per line<textarea id="workspace-services" rows="4" placeholder="Product development&#10;UX design"></textarea></label>
+          <label>Ideal customer<textarea id="workspace-ideal-customer" rows="4" placeholder="Who you want to help and why."></textarea></label>
+          <label>Target industries, one per line<textarea id="workspace-industries" rows="3"></textarea></label>
+          <label>Target roles, one per line<textarea id="workspace-roles" rows="3"></textarea></label>
+          <label>Customer pain points, one per line<textarea id="workspace-pain-points" rows="3"></textarea></label>
+          <label>Differentiators, one per line<textarea id="workspace-differentiators" rows="3"></textarea></label>
+          <label style="grid-column:1/-1">Offer<input id="workspace-offer" placeholder="A useful resource or low-friction next step"></label>
+          <label style="grid-column:1/-1">One CTA question<input id="workspace-cta" placeholder="Would it be useful if I sent it over?"></label>
+          <label>Voice and tone<input id="workspace-tone" placeholder="Helpful, concise, and professional"></label>
+          <label>Target geography<input id="workspace-geography" placeholder="Remote, Nigeria, or global"></label>
+          <label style="grid-column:1/-1">Claims to avoid, one per line<textarea id="workspace-claims" rows="2" placeholder="Claims you cannot verify about a prospect"></textarea></label>
+        </div>
+        <div class="row" style="margin-top:12px"><button id="workspace-profile-save" class="primary">Save business profile</button><button id="workspace-demo-seed">Load safe demo</button><button id="workspace-demo-clear" class="hidden">Leave demo</button><span id="workspace-profile-feedback" class="feedback"></span></div>
+      </div>
+      <div class="card" style="max-width:720px">
+        <h2 style="margin-top:0">AI model</h2>
+        <p class="muted">The active model is used for lead scoring, email drafting, and reply classification.</p>
+        <div class="row">
+          <select id="ai-model" class="grow" aria-label="Active AI model"></select>
+          <button id="ai-model-save" class="primary">Save model</button>
+        </div>
+        <p id="ai-model-meta" class="muted small"></p>
+        <p id="ai-model-feedback" class="feedback" aria-live="polite"></p>
+      </div>
+      <div class="card" style="max-width:720px;margin-top:14px">
+        <h2 style="margin-top:0">Messaging & sender identity</h2>
+        <p class="muted">These values are applied to new drafts and suggested replies.</p>
+        <div class="grid two">
+          <label>Greeting with a name<input id="outreach-greeting" placeholder="Hi"></label>
+          <label>Greeting without a name<input id="outreach-fallback-greeting" placeholder="Hello"></label>
+          <label>Signoff<input id="outreach-signoff" placeholder="Best regards"></label>
+          <label>Optional sender name<input id="outreach-sender-name" placeholder="Name shown below the signoff"></label>
+          <label style="grid-column:1/-1">Sender email<input id="outreach-sender-email" type="email" placeholder="you@yourbusiness.com" autocomplete="email"></label>
+          <label style="grid-column:1/-1">Sender display name<input id="outreach-sender-display" placeholder="Your business" autocomplete="organization"></label>
+          <label style="grid-column:1/-1">HTML footer (optional)<textarea id="outreach-footer-html" rows="6" placeholder="Leave empty to send no HTML footer"></textarea></label>
+        </div>
+        <p class="muted small">Your business profile or campaign controls the offer and CTA. Replies go to the sender email, which must be approved in Zoho.</p>
+        <div class="footer-preview-wrap"><p class="muted small" style="margin:0 0 7px">HTML footer preview</p><iframe id="outreach-footer-preview" title="HTML footer preview" sandbox="" style="width:100%;min-height:130px;border:1px solid var(--line);border-radius:8px;background:#fff"></iframe></div>
+        <div class="row" style="margin-top:12px"><button id="outreach-settings-save" class="primary">Save email wording</button><span id="outreach-settings-feedback" class="feedback" aria-live="polite"></span></div>
+      </div>
+      <div class="card" style="max-width:900px;margin-top:14px">
+        <div class="row"><div class="grow"><h2 style="margin:0">Sender profiles</h2><p class="muted small" style="margin:4px 0">A profile snapshots its sender, footer, writing defaults, and internal copies into every campaign draft.</p></div><button id="profile-new">New sender profile</button></div>
+        <div id="profile-editor" class="hidden" style="margin-top:12px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+            <label>Name<input id="profile-name" placeholder="Primary sender" style="width:100%"></label>
+            <label>Display name<input id="profile-display" placeholder="Your business" style="width:100%"></label>
+            <label>Zoho-approved sender / reply inbox<input id="profile-sender" type="email" placeholder="you@yourbusiness.com" style="width:100%"></label>
+            <label>Internal CC<input id="profile-cc" type="email" placeholder="Optional" style="width:100%"></label>
+            <label>Internal BCC<input id="profile-bcc" type="email" placeholder="Optional" style="width:100%"></label>
+            <label>Greeting<input id="profile-greeting" value="Hi" style="width:100%"></label>
+            <label>Fallback greeting<input id="profile-fallback" value="Hello" style="width:100%"></label>
+            <label>Signoff<input id="profile-signoff" value="Best regards" style="width:100%"></label>
+            <label>Optional sender name<input id="profile-sender-name" placeholder="Name shown below the signoff" style="width:100%"></label>
+          </div>
+          <label style="display:block;margin-top:10px">HTML footer<textarea id="profile-footer" rows="5"></textarea></label>
+          <iframe id="profile-footer-preview" class="signature-frame" sandbox="" title="Sender profile footer preview"></iframe>
+          <div class="row" style="margin-top:10px"><label><input id="profile-confirm-zoho" type="checkbox"> I confirm this alternate sender is Zoho-approved</label><label><input id="profile-confirm-display" type="checkbox"> Display name matches Zoho Send Mail As</label><button id="profile-save" class="primary">Save profile</button><button id="profile-cancel">Cancel</button><span id="profile-feedback" class="feedback"></span></div>
+        </div>
+        <div id="profile-list" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <section id="tab-queue" class="hidden">
+      <div class="toolbar">
+        <div class="grow"><b>Send queue</b><div class="muted small">Messages are paced one every two minutes from the selected start time. A campaign’s caps and sending window still apply.</div></div>
+        <select id="queue-filter-state" aria-label="Queue status"><option value="queued">Queued</option><option value="failed">Failed</option><option value="send_unknown">Unknown outcome</option><option value="all">All delivery issues</option></select>
+        <input id="queue-filter-q" placeholder="Filter company or email" aria-label="Filter queue">
+        <button id="queue-refresh">Refresh</button>
+      </div>
+      <div id="queue-actions" class="toolbar hidden">
+        <span id="queue-selection-status" class="muted small">0 selected</span>
+        <button id="queue-select-visible">Select visible</button>
+        <button id="queue-clear-selection">Clear</button>
+        <button id="queue-cancel-selected" class="danger">Cancel selected</button>
+      </div>
+      <div id="queue-list"></div>
+    </section>
+
+    <section id="tab-sent" class="hidden">
+      <div class="toolbar">
+        <div class="grow"><b>Sent mail</b><div class="muted small">A message appears here only after Zoho accepts delivery. Queued messages remain out of this list.</div></div>
+        <input id="sent-filter-company" placeholder="Filter company or email">
+        <button id="sent-refresh">Refresh</button>
+      </div>
+      <div id="sent-list"></div>
+    </section>
+
+    <section id="tab-campaigns" class="hidden">
+      <div class="toolbar">
+        <div class="grow"><b>Campaign workspace</b><div class="muted small">Draft, queue, pause, and review every outbound sequence in one place.</div></div>
+        <button id="campaign-new" class="primary">Create campaign</button>
+        <button id="campaigns-refresh">Refresh</button>
+      </div>
+      <div id="campaign-form-wrap" class="card hidden">
+        <h2 id="campaign-form-title" style="margin-top:0">New campaign</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+          <label>Campaign name<input id="campaign-name" placeholder="e.g. Studio introduction" style="width:100%"></label>
+          <label>Sender profile<select id="campaign-profile" style="width:100%"></select></label>
+          <label>Objective<input id="campaign-objective" placeholder="Introduce a service to a relevant audience" style="width:100%"></label>
+          <label>Owner<input id="campaign-owner" placeholder="Internal owner" style="width:100%"></label>
+          <label>Timezone<input id="campaign-timezone" value="UTC" style="width:100%"></label>
+          <label>Status<select id="campaign-status" style="width:100%"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option></select></label>
+          <label>Planned start<input id="campaign-start" type="date" style="width:100%"></label>
+          <label>Planned end<input id="campaign-end" type="date" style="width:100%"></label>
+          <label>Send days<input id="campaign-days" value="1,2,3,4,5" style="width:100%"></label>
+          <label>Send window<input id="campaign-window" value="09:00-16:00" style="width:100%"></label>
+          <label>Daily cap<input id="campaign-daily-cap" type="number" min="1" value="10" style="width:100%"></label>
+          <label>Send plan<select id="campaign-send-plan" style="width:100%"><option value="10">Starter · 10 daily</option><option value="20">Growth · 20 daily</option><option value="custom">Custom daily cap</option></select></label>
+          <label>Start time<input id="campaign-start-time" type="time" value="09:00" style="width:100%"></label>
+          <label>Interval<input id="campaign-interval" type="number" min="1" max="60" value="2" style="width:100%"><span class="muted small">minutes between emails</span></label>
+          <label>Per-domain weekly cap<input id="campaign-domain-cap" type="number" min="1" value="2" style="width:100%"></label>
+          <label>Maximum volume<input id="campaign-max-volume" type="number" min="1" placeholder="Optional" style="width:100%"></label>
+          <label>Quality policy<select id="campaign-quality" style="width:100%"><option value="balanced">Balanced</option><option value="strict">Strict</option><option value="custom">Custom</option></select></label>
+          <label>Offer<input id="campaign-offer" placeholder="Use business profile default" style="width:100%"></label>
+          <label>CTA<input id="campaign-cta" placeholder="Use business profile default" style="width:100%"></label>
+          <label>Personalization note<input id="campaign-angle" placeholder="Optional campaign-specific context" style="width:100%"></label>
+          <label>Tone<input id="campaign-tone" placeholder="Clear, practical, and calm" style="width:100%"></label>
+        </div>
+        <div class="row" style="margin-top:12px"><label><input id="campaign-auto-send" type="checkbox" disabled> Auto-send disabled · every email requires human approval</label><label><input id="campaign-follow-up" type="checkbox" checked> Prepare one follow-up for review after <input id="campaign-follow-up-days" type="number" min="1" max="14" value="4" style="width:55px"> business days</label></div>
+        <label style="display:block;margin-top:12px">Initial email template <span class="muted small">Optional. Variables: {{first_name}}, {{company_name}}, {{industry}}, {{role}}</span><textarea id="campaign-initial-template" rows="5" placeholder="Leave blank to use the campaign strategy and AI drafting rules."></textarea></label>
+        <label style="display:block;margin-top:10px">Follow-up template <span class="muted small">Optional. One follow-up only.</span><textarea id="campaign-follow-template" rows="4" placeholder="Leave blank to use a general, profile-aware follow-up."></textarea></label>
+        <label style="display:block;margin-top:10px">Internal notes<textarea id="campaign-notes" rows="2"></textarea></label>
+        <div class="row" style="margin-top:12px"><button id="campaign-save" class="primary">Save campaign</button><button id="campaign-cancel">Cancel</button><span id="campaign-feedback" class="feedback"></span></div>
+      </div>
+      <div id="campaign-list"></div>
+    </section>
+  </main>
+</div>
+
+<div id="drawer-wrap" class="hidden">
+  <div class="overlay" data-close="drawer"></div>
+  <div class="drawer"><div id="drawer-content"></div></div>
+</div>
+
+<div id="modal-wrap" class="hidden">
+  <div class="overlay" data-close="modal"></div>
+  <div class="modal"><div class="modal-box" id="modal-content"></div></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+const LEAD_STATUSES = ['new','scored','drafted','approved','queued','sent','replied_positive','meeting_requested','asked_for_more_info','referred','not_now','not_interested','suppressed','unmatched_reply','manual_review','failed'];
+const SEGMENTS = ['fintech','healthcare','education','logistics','saas','ecommerce','professional_services','general_business'];
+const CLASSIFICATIONS = ['positive_interest','meeting_request','asks_for_more_info','referral_to_colleague','not_now','not_interested','remove_me','out_of_office','bounce_or_auto_reply','unclear'];
+
+const state = {
+  token: localStorage.getItem('outreach_token') || '',
+  tab: 'pipeline',
+  page: 0,
+  pageSize: 50,
+  total: 0,
+  drafting: new Set(),
+  draftMessages: [],
+  draftSelection: new Set(),
+  draftAutoSelected: false,
+  campaignEditing: null,
+  profileEditing: null,
+  leadSelection: new Set(),
+  queueMessages: [],
+  queueSelection: new Set(),
+};
+
+const $ = (sel) => document.querySelector(sel);
+
+function splitLeadImportLine(line, delimiter) {
+  const cells = []; let current = ''; let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"' && line[i + 1] === '"' && quoted) { current += '"'; i++; }
+    else if (char === '"') quoted = !quoted;
+    else if (char === delimiter && !quoted) { cells.push(current.trim()); current = ''; }
+    else current += char;
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
+function parseLeadTable(text) {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n').filter((line) => line.trim());
+  if (lines.length < 2) return [];
+  const delimiter = lines[0].includes('\t') ? '\t' : ',';
+  const headers = splitLeadImportLine(lines[0], delimiter).map((header) =>
+    header.replace(/^\uFEFF/, '').trim().toLowerCase().replace(/[\s-]+/g, '_'));
+  const get = (row, ...keys) => keys.map((key) => row[key]).find((value) => value && value.trim())?.trim() || '';
+  return lines.slice(1).map((line) => {
+    const cells = splitLeadImportLine(line, delimiter);
+    const row = Object.fromEntries(headers.map((header, index) => [header, cells[index] || '']));
+    const phone = get(row, 'phone', 'telephone', 'mobile');
+    const fitNote = get(row, 'fit_note', 'fit_notes', 'notes', 'note');
+    const domain = get(row, 'company_domain', 'domain', 'website');
+    const linkedin = get(row, 'linkedin', 'linkedin_url', 'contact_profile_url').replace(/^\[.*\]\((https?:\/\/[^)]+)\)$/i, '$1');
+    return {
+      email: get(row, 'email').toLowerCase(),
+      firstName: get(row, 'first_name', 'firstname', 'first'),
+      lastName: get(row, 'last_name', 'lastname', 'last'),
+      company: get(row, 'company', 'company_name'),
+      companyWebsite: domain && !/^https?:\/\//i.test(domain) ? 'https://' + domain : domain,
+      role: get(row, 'position', 'role', 'title', 'job_title'),
+      country: get(row, 'location', 'country'),
+      contactProfileUrl: linkedin,
+      notes: [phone ? 'Phone: ' + phone : '', fitNote].filter(Boolean).join('\n'),
+    };
+  }).filter((lead) => lead.email);
+}
+
+/* Safe DOM builder - all data goes through textContent, never innerHTML. */
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === null || v === undefined) continue;
+    if (k === 'class') node.className = v;
+    else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
+    else node.setAttribute(k, v);
+  }
+  for (const child of children.flat(Infinity)) {
+    if (child === null || child === undefined || child === false) continue;
+    node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+  }
+  return node;
+}
+
+function toast(message, bad = false) {
+  const t = $('#toast');
+  t.textContent = message;
+  t.className = bad ? 'bad show' : 'show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch('/api' + path, {
+    method: opts.method || 'GET',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + state.token },
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (res.status === 401) { lock(); throw new Error('Unauthorized'); }
+  let data = null;
+  try { data = await res.json(); } catch { data = { ok: false, error: 'Bad response' }; }
+  if (!res.ok && !(res.status === 202 && data && data.deferred)) {
+    throw new Error((data && data.error) || ('HTTP ' + res.status));
+  }
+  return data;
+}
+
+function lock() {
+  localStorage.removeItem('outreach_token');
+  state.token = '';
+  $('#app').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+}
+
+function fmtDate(s) {
+  if (!s) return '';
+  return String(s).replace('T', ' ').slice(0, 16);
+}
+
+function chip(value, prefix) {
+  return el('span', { class: 'chip ' + prefix + String(value || '') }, String(value || '—'));
+}
+
+function draftButton(id) {
+  const btn = el('button', { 'data-draft-id': id }, 'Draft mail');
+  btn.addEventListener('click', () => draftLead(id));
+  return btn;
+}
+
+function closeLayer(which) {
+  $('#' + which + '-wrap').classList.add('hidden');
+}
+
+document.addEventListener('click', (e) => {
+  const close = e.target && e.target.getAttribute && e.target.getAttribute('data-close');
+  if (close) closeLayer(close);
+});
+
+/* ---------- Stats ---------- */
+
+async function refreshStats() {
+  try {
+    const s = await api('/stats');
+    const chips = [
+      el('span', { class: 'stat' }, 'Sends today ', el('b', {}, s.sendsToday + ' / ' + s.dailyCap)),
+      el('span', { class: 'stat' }, 'Awaiting approval ', el('b', {}, s.draftsAwaiting)),
+      el('span', { class: 'stat' }, 'New ', el('b', {}, s.pipeline.new), ' · Scored ', el('b', {}, s.pipeline.scored),
+        ' · Sent ', el('b', {}, s.pipeline.sent), ' · Positive ', el('b', {},
+          (s.pipeline.replied_positive || 0) + (s.pipeline.meeting_requested || 0) + (s.pipeline.asked_for_more_info || 0))),
+    ];
+    if (s.sendUnknown > 0) {
+      chips.push(el('span', { class: 'stat warn' }, '⚠ ' + s.sendUnknown + ' send(s) need manual review'));
+    }
+    $('#stats').replaceChildren(...chips);
+  } catch (err) {
+    if (String(err.message) !== 'Unauthorized') toast('Stats failed: ' + err.message, true);
+  }
+}
+
+/* ---------- Pipeline tab ---------- */
+
+async function loadLeads() {
+  const params = new URLSearchParams();
+  const status = $('#f-status').value, segment = $('#f-segment').value, q = $('#f-q').value.trim();
+  if (status) params.set('status', status);
+  if (segment) params.set('segment', segment);
+  if (q) params.set('q', q);
+  params.set('limit', String(state.pageSize));
+  params.set('offset', String(state.page * state.pageSize));
+  const data = await api('/leads?' + params.toString());
+  if (!$('#lead-campaign').dataset.loaded) {
+    const campaigns = await api('/campaigns');
+    const picker = $('#lead-campaign'); const selected = picker.value;
+    picker.replaceChildren(el('option', { value: '' }, 'Assign selected to campaign…'), ...campaigns.campaigns.filter((c) => !['archived','completed'].includes(c.status)).map((c) => el('option', { value: c.id }, c.name)));
+    picker.value = selected; picker.dataset.loaded = '1';
+  }
+  state.total = data.total;
+  $('#lead-count').textContent = data.total + ' lead(s)';
+  $('#page-info').textContent = 'Page ' + (state.page + 1) + ' of ' + Math.max(1, Math.ceil(data.total / state.pageSize));
+
+  const tbody = $('#leads-table tbody');
+  tbody.replaceChildren(...data.leads.map((l) =>
+    el('tr', { onclick: () => openLead(l.id) },
+      el('td', {}, el('input', { type: 'checkbox', checked: state.leadSelection.has(l.id), onclick: (event) => event.stopPropagation(), onchange: (event) => { if (event.target.checked) state.leadSelection.add(l.id); else state.leadSelection.delete(l.id); } })),
+      el('td', {},
+        el('div', {}, [l.first_name, l.last_name].filter(Boolean).join(' ') || '—'),
+        el('div', { class: 'muted small' }, l.email)),
+      el('td', {}, l.company || '—', l.role ? el('div', { class: 'muted small' }, l.role) : null),
+      el('td', {}, l.segment ? chip(l.segment, 'seg-') : '—'),
+      el('td', {}, l.fit_score === null || l.fit_score === undefined ? '—' : String(l.fit_score)),
+      el('td', {}, chip(l.status, 'st-')),
+      el('td', {}, l.last_reply_classification ? chip(l.last_reply_classification, 'cl-') : '—'),
+      el('td', { class: 'muted small' }, fmtDate(l.updated_at))
+    )
+  ));
+  if (data.leads.length === 0) {
+    tbody.replaceChildren(el('tr', {}, el('td', { colspan: '8', class: 'empty' }, 'No leads match.')));
+  }
+}
+
+async function openLead(id) {
+  const data = await api('/leads/' + id);
+  const l = data.lead;
+  const wrap = $('#drawer-content');
+
+  const actions = [];
+  if (['new', 'scored'].includes(l.status)) {
+    actions.push(el('button', { onclick: () => leadAction('Scoring…', () => api('/leads/' + id + '/score', { method: 'POST' }), id) }, l.fit_score === null ? 'Score now' : 'Re-score'));
+  }
+  if (!['suppressed', 'failed', 'not_interested'].includes(l.status)) {
+    actions.push(draftButton(id));
+  }
+  if (['sent', 'replied_positive', 'meeting_requested', 'asked_for_more_info', 'referred', 'not_now', 'not_interested', 'manual_review', 'failed'].includes(l.status)) {
+    actions.push(el('button', { onclick: () => leadAction('Reactivating…', () => api('/leads/' + id, { method: 'PATCH', body: { action: 'reactivate' } }), id) }, 'Reactivate'));
+  }
+  if (!['not_interested', 'suppressed'].includes(l.status)) {
+    actions.push(el('button', { class: 'danger', onclick: () => {
+      if (confirm('Disqualify this lead?')) leadAction('Disqualifying…', () => api('/leads/' + id, { method: 'PATCH', body: { action: 'disqualify' } }), id);
+    } }, 'Disqualify'));
+  }
+
+  const notes = el('textarea', { rows: '3', placeholder: 'Notes…' });
+  notes.value = l.notes || '';
+
+  wrap.replaceChildren(
+    el('div', { class: 'row' },
+      el('h2', { class: 'grow', style: 'margin:0' }, [l.first_name, l.last_name].filter(Boolean).join(' ') || l.email),
+      chip(l.status, 'st-'),
+      el('button', { onclick: () => closeLayer('drawer') }, '✕')),
+    el('div', { class: 'kv' },
+      el('div', {}, 'Email'), el('div', {}, l.email),
+      el('div', {}, 'Company'), el('div', {}, l.company || '—'),
+      el('div', {}, 'Role'), el('div', {}, l.role || '—'),
+      el('div', {}, 'Industry'), el('div', {}, l.industry || '—'),
+      el('div', {}, 'Segment'), el('div', {}, l.segment ? chip(l.segment, 'seg-') : '—'),
+      el('div', {}, 'Fit score'), el('div', {}, l.fit_score === null ? '—' : l.fit_score + ' / 100'),
+      el('div', {}, 'Fit reason'), el('div', {}, l.fit_reason || '—'),
+      el('div', {}, 'Pain points'), el('div', {}, parsePain(l.pain_points)),
+      el('div', {}, 'Source'), el('div', {}, l.source),
+      el('div', {}, 'Created'), el('div', {}, fmtDate(l.created_at))),
+    el('div', { class: 'row' }, ...actions),
+    el('p', { id: 'draft-feedback-' + id, class: 'feedback', 'aria-live': 'polite' }),
+    el('h3', {}, 'Notes'),
+    notes,
+    el('div', { class: 'row', style: 'margin-top:6px' },
+      el('button', { onclick: async () => {
+        await api('/leads/' + id, { method: 'PATCH', body: { notes: notes.value } });
+        toast('Notes saved');
+      } }, 'Save notes')),
+    el('h3', {}, 'Messages'),
+    data.messages.length === 0 ? el('p', { class: 'muted small' }, 'No messages yet.') :
+      el('div', {}, ...data.messages.map((m) => el('div', { class: 'card' },
+        el('div', { class: 'row' },
+          el('b', {}, m.direction === 'outbound' ? '→ ' + (m.to_email || '') : '← ' + (m.from_email || '')),
+          chip(m.status, 'st-'),
+          m.classification ? chip(m.classification, 'cl-') : null,
+          el('span', { class: 'muted small', style: 'margin-left:auto' }, fmtDate(m.created_at))),
+        m.subject ? el('div', { class: 'small', style: 'margin-top:4px' }, el('b', {}, m.subject)) : null,
+        el('details', {}, el('summary', { class: 'muted small' }, 'Body'), el('pre', {}, m.body || '')),
+        m.sender_display_name ? el('div', { class: 'muted small' }, 'From: ' + m.sender_display_name + (m.from_email ? ' <' + m.from_email + '>' : '')) : null,
+        m.status_reason ? el('div', { class: 'muted small' }, 'Next: ' + m.status_reason) : null,
+        ['draft','needs_review'].includes(m.status) ? el('div', { class: 'row', style: 'margin-top:6px' },
+          el('button', { class: 'primary', onclick: () => { closeLayer('drawer'); openDraft(m.id); } }, 'Review draft')) : null,
+        m.error ? el('div', { class: 'small', style: 'color:var(--bad);margin-top:4px' }, m.error) : null))),
+    el('h3', {}, 'Timeline'),
+    el('div', { class: 'timeline' }, ...data.events.map((ev) =>
+      el('div', {}, el('b', {}, ev.event), ' ', el('span', { class: 'muted' }, fmtDate(ev.created_at)),
+        ev.detail ? el('div', { class: 'muted' }, ev.detail) : null)))
+  );
+  $('#drawer-wrap').classList.remove('hidden');
+}
+
+function parsePain(json) {
+  try {
+    const arr = JSON.parse(json || '[]');
+    return Array.isArray(arr) && arr.length ? arr.join(' · ') : '—';
+  } catch { return '—'; }
+}
+
+async function leadAction(label, fn, reopenId) {
+  try {
+    toast(label);
+    await fn();
+    toast('Done');
+    await Promise.all([loadLeads(), refreshStats()]);
+    if (reopenId) await openLead(reopenId);
+  } catch (err) { toast(err.message, true); }
+}
+
+async function draftLead(id) {
+  if (state.drafting.has(id)) return;
+  state.drafting.add(id);
+  const buttons = () => document.querySelectorAll('[data-draft-id="' + id + '"]');
+  const feedback = () => document.getElementById('draft-feedback-' + id);
+  const stages = ['Scoring lead…', 'Generating personalized email…', 'Reviewing draft quality…'];
+  let stage = 0;
+  const showStage = () => {
+    const message = stages[Math.min(stage, stages.length - 1)];
+    stage = Math.min(stage + 1, stages.length - 1);
+    buttons().forEach((btn) => {
+      btn.disabled = true;
+      btn.replaceChildren(el('span', { class: 'spinner' }), message);
+    });
+    if (feedback()) {
+      feedback().className = 'feedback';
+      feedback().textContent = message;
+    }
+  };
+  showStage();
+  const timer = setInterval(showStage, 1400);
+  try {
+    const result = await api('/leads/' + id + '/draft', { method: 'POST', body: {} });
+    toast('Draft generated successfully.');
+    await Promise.all([loadLeads(), refreshStats()]);
+    await openLead(id);
+    if (feedback()) {
+      feedback().className = result.message.status === 'needs_review' ? 'feedback bad' : 'feedback success';
+      feedback().textContent = result.message.status === 'needs_review'
+        ? 'Draft generated with validation warnings: ' + (result.message.error || 'Needs review.')
+        : 'Draft generated successfully.';
+    }
+  } catch (err) {
+    if (/force:true/.test(err.message) && confirm(err.message + '\n\nForce a new draft?')) {
+      try {
+        const result = await api('/leads/' + id + '/draft', { method: 'POST', body: { force: true } });
+        toast('Draft generated successfully.');
+        await openLead(id);
+        if (feedback()) {
+          feedback().className = result.message.status === 'needs_review' ? 'feedback bad' : 'feedback success';
+          feedback().textContent = result.message.status === 'needs_review'
+            ? 'Draft generated with validation warnings: ' + (result.message.error || 'Needs review.')
+            : 'Draft generated successfully.';
+        }
+      } catch (err2) {
+        toast('Draft failed. Please try again.', true);
+        if (feedback()) {
+          feedback().className = 'feedback bad';
+          feedback().textContent = 'Draft failed. Please try again. ' + err2.message;
+        }
+      }
+    } else {
+      toast('Draft failed. Please try again.', true);
+      if (feedback()) {
+        feedback().className = 'feedback bad';
+        feedback().textContent = 'Draft failed. Please try again. ' + err.message;
+      }
+    }
+  } finally {
+    clearInterval(timer);
+    state.drafting.delete(id);
+    buttons().forEach((btn) => {
+      btn.disabled = false;
+      btn.replaceChildren('Draft mail');
+    });
+  }
+}
+
+/* ---------- Drafts tab ---------- */
+
+async function loadDrafts() {
+  const view = $('#draft-view').value;
+  $('#drafts-send-selected').disabled = view === 'sent';
+  $('#drafts-regenerate-all').disabled = view === 'sent';
+  const data = await api('/messages?status=' + encodeURIComponent(view) + '&limit=200');
+  state.draftMessages = data.messages || [];
+  const companyFilter = $('#draft-filter-company').value.trim().toLowerCase();
+  const industryFilter = $('#draft-filter-industry').value.trim().toLowerCase();
+  const segmentFilter = $('#draft-filter-segment').value;
+  const dateFrom = $('#draft-date-from').value;
+  const dateTo = $('#draft-date-to').value;
+  let messages = state.draftMessages.filter((m) => {
+    const company = String(m.lead_company || '').toLowerCase();
+    const industry = String(m.lead_industry || '').toLowerCase();
+    return (!companyFilter || company.includes(companyFilter)) && (!industryFilter || industry.includes(industryFilter)) && (!segmentFilter || m.lead_segment === segmentFilter);
+  });
+  messages = messages.filter((m) => {
+    const generated = String(m.created_at || m.updated_at || '').slice(0, 10);
+    return (!dateFrom || generated >= dateFrom) && (!dateTo || generated <= dateTo);
+  }).sort((a, b) => ($('#draft-date-sort').value === 'asc' ? 1 : -1) * String(a.created_at || a.updated_at || '').localeCompare(String(b.created_at || b.updated_at || '')));
+  const list = $('#drafts-list');
+  state.draftSelection = new Set([...state.draftSelection].filter((id) => messages.some((m) => m.id === id)));
+  if (!state.draftAutoSelected && $('#draft-view').value === 'review') {
+    for (const message of messages) {
+      if (message.status === 'draft' && message.draft_quality_status === 'passed') state.draftSelection.add(message.id);
+    }
+    state.draftAutoSelected = true;
+  }
+  updateDraftSelectionStatus();
+  if (messages.length === 0) {
+    list.replaceChildren(el('p', { class: 'empty' }, 'No drafts match these filters.'));
+    return;
+  }
+  list.replaceChildren(...messages.map((m) => {
+    const warnings = parseJsonValue(m.validation_warnings, []);
+    return el('div', { class: 'card' },
+      el('div', { class: 'row' },
+        el('input', { type: 'checkbox', 'aria-label': 'Select ' + (m.to_email || m.lead_email || ''), checked: state.draftSelection.has(m.id), onchange: (event) => {
+          if (event.target.checked) state.draftSelection.add(m.id); else state.draftSelection.delete(m.id);
+          updateDraftSelectionStatus();
+        } }),
+        el('b', {}, m.lead_company || m.lead_email || m.to_email || ''),
+        m.lead_segment ? chip(m.lead_segment, 'seg-') : null,
+        m.buyer_persona ? chip(m.buyer_persona, 'persona-') : null,
+        chip(m.draft_quality_status || m.status, m.draft_quality_status === 'passed' ? 'cl-' : 'st-'),
+        el('span', { class: 'muted small', style: 'margin-left:auto' }, fmtDate(m.updated_at))),
+      el('div', { class: 'small muted' }, 'To: ' + (m.to_email || '') + (m.lead_role ? ' · ' + m.lead_role : '')),
+      el('div', { style: 'margin:6px 0 2px' }, el('b', {}, m.subject || '(no subject)')),
+      m.recommended_offer ? el('div', { class: 'small' }, 'Offer: ', el('span', { class: 'muted' }, m.recommended_offer)) : null,
+      el('div', { class: 'muted small', style: 'margin-top:4px' }, String(m.body || '').slice(0, 220) + (String(m.body || '').length > 220 ? '...' : '')),
+      warnings.length ? el('p', { class: 'warning small' }, warnings[0] + (warnings.length > 1 ? ` +${warnings.length - 1} more` : '')) : null,
+      el('div', { class: 'row', style: 'margin-top:10px' },
+        el('button', { class: 'primary', onclick: () => openDraft(m.id) }, view === 'sent' ? 'View sent email' : 'Review and approve'))
+    );
+  }));
+}
+
+async function loadPipeline() {
+  await Promise.all([loadOverview(), loadLeads()]);
+}
+
+async function loadOverview() {
+  const overview = await api('/overview');
+  const remaining = Math.max(0, (overview.dailyCap || 0) - (overview.sendsToday || 0));
+  const metrics = [
+    ['Today', `${overview.sendsToday || 0} / ${overview.dailyCap || 0}`, `${remaining} remaining`, remaining === 0],
+    ['Queue', overview.queue?.total || 0, overview.queue?.next ? 'Next ' + fmtDate(overview.queue.next.scheduled_at) : 'Nothing scheduled', false],
+    ['Attention', (overview.draftsAwaiting || 0) + (overview.blocked || 0) + (overview.sendUnknown || 0), 'Drafts, failures, or unknown sends', (overview.blocked || 0) > 0 || (overview.sendUnknown || 0) > 0],
+    ['Replies', overview.repliesNeedingAction || 0, 'Need a human next step', (overview.repliesNeedingAction || 0) > 0],
+  ];
+  $('#overview-summary').replaceChildren(...metrics.map(([label, value, hint, alert]) => el('div', { class: 'metric' + (alert ? ' alert' : '') }, el('div', { class: 'muted small' }, label), el('b', {}, String(value)), el('div', { class: 'muted small' }, hint))));
+  const attention = overview.attention || [];
+  const target = $('#overview-attention');
+  if (!attention.length) {
+    target.replaceChildren(el('div', { class: 'status-banner good attention-clear' },
+      el('div', { class: 'row' }, el('span', { class: 'status-dot' }), el('b', {}, 'Everything is moving cleanly')),
+      el('div', { class: 'muted small', style: 'margin:5px 0 0 17px' }, 'No blocked, retrying, or unanswered messages need attention.')));
+  } else {
+    const rows = attention.map((item) => el('tr', {},
+      el('td', {}, item.lead_company || item.lead_email || 'Unknown'),
+      el('td', {}, chip(item.status, 'st-')),
+      el('td', { class: 'reason' }, item.status_reason || item.error_detail || 'Review required'),
+      el('td', { class: 'small' }, item.next_action || 'manual_review'),
+      el('td', { class: 'action-cell' }, ['draft', 'needs_review'].includes(item.status)
+        ? el('button', { onclick: () => openDraft(item.id) }, 'Open draft')
+        : el('button', { onclick: () => switchTab('queue') }, 'Open queue'))
+    ));
+    const table = el('div', { class: 'table-wrap', style: 'margin-top:8px' },
+      el('table', {},
+        el('thead', {}, el('tr', {}, el('th', {}, 'Recipient'), el('th', {}, 'Status'), el('th', {}, 'Why'), el('th', {}, 'Next action'), el('th', {}))),
+        el('tbody', {}, ...rows)
+      )
+    );
+    target.replaceChildren(el('div', { class: 'card attention-card' },
+      el('div', { class: 'row' }, el('b', { class: 'grow attention-title' }, 'Needs attention'), el('span', { class: 'pill warn' }, attention.length + ' item(s)')),
+      el('p', { class: 'attention-subtitle' }, 'Resolve the next blocker or open the queue. Nothing sends silently.'),
+      table
+    ));
+  }
+}
+
+function localDateTimeInputValue(date) {
+  const pad = (value) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/* ---------- Sent tab ---------- */
+
+async function loadSent() {
+  const data = await api('/messages?status=sent&limit=200');
+  const filter = $('#sent-filter-company').value.trim().toLowerCase();
+  const messages = (data.messages || []).filter((message) => !filter || [
+    message.lead_company, message.lead_email, message.to_email, message.subject,
+  ].filter(Boolean).join(' ').toLowerCase().includes(filter));
+  const list = $('#sent-list');
+  if (!messages.length) {
+    list.replaceChildren(el('p', { class: 'empty' }, filter ? 'No sent emails match this filter.' : 'No emails have been sent yet.'));
+    return;
+  }
+  list.replaceChildren(...messages.map((message) => el('div', { class: 'card' },
+    el('div', { class: 'row' },
+      el('b', { class: 'grow' }, message.lead_company || message.lead_email || message.to_email || 'Unknown recipient'),
+      chip('sent', 'st-'),
+      message.campaign_id ? chip('campaign', 'seg-') : chip('legacy', 'seg-'),
+      el('span', { class: 'muted small' }, 'Sent ' + fmtDate(message.sent_at))),
+    el('div', { class: 'muted small' }, 'To: ' + (message.to_email || '') + (message.lead_role ? ' · ' + message.lead_role : '')),
+    el('div', { class: 'muted small' }, 'From: ' + (message.sender_display_name || message.from_email || 'Sender identity not set') + (message.from_email && message.sender_display_name ? ' <' + message.from_email + '>' : '')),
+    el('div', { style: 'margin-top:6px' }, el('b', {}, message.subject || '(no subject)')),
+    el('details', { style: 'margin-top:6px' }, el('summary', { class: 'muted small' }, 'View email'), el('pre', {}, message.body || '')),
+    message.status_reason ? el('p', { class: 'muted small' }, message.status_reason) : null,
+    message.error ? el('p', { class: 'warning small' }, message.error) : null
+  )));
+}
+
+async function loadQueue() {
+  const filterState = $('#queue-filter-state').value;
+  const query = $('#queue-filter-q').value.trim().toLowerCase();
+  const statuses = filterState === 'all' ? ['queued', 'failed', 'send_unknown'] : [filterState];
+  const responses = await Promise.all(statuses.map((status) => api('/messages?status=' + encodeURIComponent(status) + '&limit=200')));
+  const list = $('#queue-list');
+  const messages = responses.flatMap((data) => data.messages || []).filter((message) => !query || [message.lead_company, message.lead_email, message.to_email, message.subject, message.status_reason, message.error_detail].filter(Boolean).join(' ').toLowerCase().includes(query));
+  state.queueMessages = messages;
+  state.queueSelection = new Set([...state.queueSelection].filter((id) => messages.some((message) => message.id === id && message.status === 'queued')));
+  const actions = $('#queue-actions');
+  actions.classList.toggle('hidden', !messages.some((message) => message.status === 'queued'));
+  $('#queue-selection-status').textContent = state.queueSelection.size + ' selected';
+  if (!messages.length) {
+    list.replaceChildren(el('p', { class: 'empty' }, 'The send queue is empty.')); return;
+  }
+  list.replaceChildren(...messages.sort((a, b) => String(a.scheduled_at || a.updated_at).localeCompare(String(b.scheduled_at || b.updated_at))).map((message) => el('div', { class: 'card' },
+    el('div', { class: 'row' }, message.status === 'queued' ? el('input', { type: 'checkbox', checked: state.queueSelection.has(message.id), 'aria-label': 'Select queued message', onchange: (event) => { if (event.target.checked) state.queueSelection.add(message.id); else state.queueSelection.delete(message.id); $('#queue-selection-status').textContent = state.queueSelection.size + ' selected'; } }) : null, el('b', { class: 'grow' }, message.lead_company || message.lead_email || message.to_email || 'Unknown recipient'), chip(message.status, 'st-'), el('span', { class: 'muted small' }, message.retry_at ? 'Retry ' + fmtDate(message.retry_at) : message.scheduled_at ? 'Scheduled ' + fmtDate(message.scheduled_at) : 'Awaiting next send window')),
+    el('div', { class: 'muted small' }, 'To: ' + (message.to_email || '') + (message.campaign_id ? ' · campaign controlled' : ' · direct queue')),
+    el('div', { style: 'margin-top:5px' }, el('b', {}, message.subject || '(no subject)')),
+    el('p', { class: message.status === 'queued' && message.retry_at ? 'warning small' : 'muted small' }, message.status_reason || message.error_detail || (message.status === 'queued' ? 'Ready for delivery' : 'Manual action required')),
+    message.error_detail ? el('details', { class: 'small' }, el('summary', { class: 'muted' }, 'Provider detail'), el('pre', {}, message.error_detail)) : null,
+    el('div', { class: 'action-cell', style: 'margin-top:8px' },
+      message.status === 'queued' ? el('button', { class: 'danger', onclick: async () => { if (!confirm('Cancel this queued message?')) return; try { await api('/messages/' + message.id + '/cancel', { method: 'POST' }); toast('Queued message cancelled'); await Promise.all([loadQueue(), loadOverview(), refreshStats()]); } catch (err) { toast(err.message, true); } } }, 'Cancel') : null,
+      message.status === 'queued' ? el('button', { onclick: async () => { const next = prompt('Enter a new ISO time (for example 2026-08-29T09:00:00Z):', message.scheduled_at || new Date().toISOString()); if (!next) return; try { await api('/messages/' + message.id + '/reschedule', { method: 'POST', body: { scheduledAt: next } }); toast('Message rescheduled'); await loadQueue(); } catch (err) { toast(err.message, true); } } }, 'Reschedule') : null,
+      ['failed','send_unknown'].includes(message.status) ? el('button', { class: 'primary', onclick: async () => { const confirmUnknown = message.status === 'send_unknown' ? confirm('Confirm Zoho did not deliver this message before retrying?') : true; if (!confirmUnknown) return; try { await api('/messages/' + message.id + '/retry', { method: 'POST', body: { confirmUnknown, scheduledAt: new Date().toISOString() } }); toast('Retry queued'); await Promise.all([loadQueue(), loadOverview(), refreshStats()]); } catch (err) { toast(err.message, true); } } }, 'Retry') : null
+    )
+  )));
+}
+
+function updateDraftSelectionStatus() {
+  const status = $('#drafts-selection-status');
+  if (status) status.textContent = state.draftSelection.size + ' selected';
+}
+
+function visibleDrafts() {
+  const company = $('#draft-filter-company').value.trim().toLowerCase();
+  const industry = $('#draft-filter-industry').value.trim().toLowerCase();
+  const segment = $('#draft-filter-segment').value;
+  return state.draftMessages.filter((m) =>
+    (!company || String(m.lead_company || '').toLowerCase().includes(company)) &&
+    (!industry || String(m.lead_industry || '').toLowerCase().includes(industry)) &&
+    (!segment || m.lead_segment === segment));
+}
+
+async function sendSelectedDrafts() {
+  if ($('#draft-view').value === 'sent') { toast('Sent emails are view-only', true); return; }
+  const amount = Math.min(Math.max(Number.parseInt($('#draft-send-amount').value, 10) || 1, 1), 200);
+  const selected = [...state.draftSelection].slice(0, amount);
+  if (!selected.length) { toast('Select at least one draft first', true); return; }
+  if (!confirm('Approve and queue ' + selected.length + ' selected draft' + (selected.length === 1 ? '' : 's') + ' one every 2 minutes?')) return;
+  const button = $('#drafts-send-selected');
+  button.disabled = true;
+  let queued = 0; let blocked = 0;
+  try {
+    const localStart = $('#draft-queue-start').value;
+    const result = await api('/messages', { method: 'POST', body: { messageIds: selected, scheduledAt: localStart ? new Date(localStart).toISOString() : new Date().toISOString(), intervalMinutes: 2, dailyCap: amount } });
+    queued = result.queued.length; blocked = result.blocked.length;
+    for (const row of result.queued) state.draftSelection.delete(row.id);
+    toast(queued + ' queued one every 2 minutes' + (blocked ? ', ' + blocked + ' need review or are blocked' : ''));
+    await Promise.all([loadDrafts(), refreshStats()]);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function regenerateVisibleDrafts() {
+  if ($('#draft-view').value !== 'review') { toast('Switch to Drafts to regenerate', true); return; }
+  const amount = Math.min(Math.max(Number.parseInt($('#draft-send-amount').value, 10) || 1, 1), 200);
+  const targets = visibleDrafts().slice(0, amount);
+  if (!targets.length) { toast('No drafts match the current filters', true); return; }
+  if (!confirm('Regenerate ' + targets.length + ' visible drafts?')) return;
+  const button = $('#drafts-regenerate-all'); button.disabled = true;
+  try {
+    const generated = [];
+    for (const message of targets) {
+      const result = await api('/leads/' + message.lead_id + '/draft', { method: 'POST', body: { force: true } });
+      generated.push(result.message);
+    }
+    state.draftSelection = new Set(generated.filter((message) => message.status === 'draft' && message.draft_quality_status === 'passed').map((message) => message.id));
+    state.draftAutoSelected = true;
+    toast(targets.length + ' regenerated and sendable drafts selected'); await loadDrafts();
+  }
+  finally { button.disabled = false; }
+}
+
+function parseJsonValue(json, fallback) {
+  if (!json) return fallback;
+  try { return JSON.parse(json); } catch { return fallback; }
+}
+
+async function openDraft(messageId) {
+  const data = await api('/messages?status=review&limit=200');
+  const m = data.messages.find((x) => x.id === messageId);
+  if (!m) { toast('Draft no longer available', true); await loadDrafts(); return; }
+  let footer = '';
+  if (m.lead_id) {
+    try { footer = (await api('/leads/' + m.lead_id)).footerPreview || ''; } catch { /* non-fatal */ }
+  }
+
+  const subject = el('input', { style: 'width:100%' });
+  subject.value = m.subject || '';
+  const body = el('textarea', { rows: '14' });
+  body.value = m.body || '';
+  const previewSubject = el('b', {}, m.subject || '(no subject)');
+  const previewBody = el('pre', { class: 'email-preview' }, m.body || '');
+  const counter = el('span', { class: 'muted small' });
+  const editor = el('div', { class: 'hidden' },
+    el('h3', {}, 'Edit subject'), subject,
+    el('h3', {}, 'Edit body'), body);
+  const updateCount = () => {
+    const words = body.value.trim().split(/\s+/).filter(Boolean).length;
+    counter.textContent = words + ' words';
+    counter.style.color = words < 80 || words > 140 ? 'var(--warn)' : 'var(--accent-2)';
+    previewSubject.textContent = subject.value || '(no subject)';
+    previewBody.textContent = body.value;
+  };
+  subject.addEventListener('input', updateCount);
+  body.addEventListener('input', updateCount);
+  updateCount();
+
+  const busy = (btn, fn) => async () => {
+    btn.disabled = true;
+    try { await fn(); } catch (err) { toast(err.message, true); } finally { btn.disabled = false; }
+  };
+  const saveChanges = () => api('/messages/' + m.id, {
+    method: 'PATCH', body: { subject: subject.value, body: body.value },
+  });
+
+  const editBtn = el('button', {}, 'Edit draft');
+  const saveBtn = el('button', { class: 'hidden' }, 'Save edits');
+  editBtn.addEventListener('click', () => {
+    editor.classList.toggle('hidden');
+    saveBtn.classList.toggle('hidden');
+    editBtn.textContent = editor.classList.contains('hidden') ? 'Edit draft' : 'Hide editor';
+    if (!editor.classList.contains('hidden')) subject.focus();
+  });
+  saveBtn.addEventListener('click', busy(saveBtn, async () => {
+    const result = await saveChanges();
+    toast(result.message.status === 'draft' ? 'Draft saved and quality checks passed' : 'Draft saved with review warnings');
+    closeLayer('modal');
+    await loadDrafts();
+    await openDraft(m.id);
+  }));
+
+  const approveBtn = el('button', { class: 'primary' }, 'Approve send');
+  approveBtn.addEventListener('click', busy(approveBtn, async () => {
+    await saveChanges();
+    const result = await api('/messages/' + m.id + '/approve', { method: 'POST' });
+    if (result.repaired) {
+      toast('Draft automatically improved. Review the updated copy, then approve again.');
+      closeLayer('modal');
+      await Promise.all([loadDrafts(), refreshStats()]);
+      await openDraft(m.id);
+      return;
+    }
+    toast(result.queued ? 'Approved and queued for sending' : 'Approved - queue retry pending');
+    closeLayer('modal');
+    await Promise.all([loadDrafts(), refreshStats()]);
+  }));
+
+  const regenerateBtn = el('button', {}, 'Regenerate draft');
+  regenerateBtn.addEventListener('click', busy(regenerateBtn, async () => {
+    if (!m.lead_id) throw new Error('Draft has no lead');
+    if (!confirm('Regenerate this draft? The current version will remain in the timeline as rejected.')) return;
+    const result = await api('/leads/' + m.lead_id + '/draft', { method: 'POST', body: { force: true } });
+    toast(result.message.status === 'draft' ? 'New draft passed quality checks' : 'New draft needs review');
+    closeLayer('modal');
+    await Promise.all([loadDrafts(), refreshStats()]);
+    await openDraft(result.message.id);
+  }));
+
+  const reviewBtn = el('button', {}, 'Mark needs review');
+  reviewBtn.addEventListener('click', busy(reviewBtn, async () => {
+    await api('/messages/' + m.id + '/needs-review', { method: 'POST' });
+    toast('Draft marked for manual review');
+    closeLayer('modal');
+    await Promise.all([loadDrafts(), refreshStats()]);
+  }));
+
+  const warnings = parseJsonValue(m.validation_warnings, []);
+  const nextPlan = parseJsonValue(m.next_step_plan, null);
+  const qualityChecklist = nextPlan && Array.isArray(nextPlan.quality_checklist)
+    ? nextPlan.quality_checklist : [];
+  const automation = nextPlan && nextPlan.draft_automation ? nextPlan.draft_automation : null;
+  const qualityLabel = m.draft_quality_status || (m.status === 'draft' ? 'passed' : 'needs_review');
+  const strategyPanel = el('aside', { class: 'strategy-panel' },
+    el('h3', {}, 'Draft strategy'),
+    el('div', { class: 'kv' },
+      el('div', {}, 'Lead segment'), el('div', {}, m.lead_segment || 'general_business'),
+      el('div', {}, 'Buyer persona'), el('div', {}, m.buyer_persona || 'unknown'),
+      el('div', {}, 'Recommended offer'), el('div', {}, m.recommended_offer || 'Not available'),
+      el('div', {}, 'Recommended CTA'), el('div', {}, m.recommended_cta || 'Not available'),
+      el('div', {}, 'Quality status'), el('div', { class: qualityLabel === 'passed' ? 'quality-pass' : 'warning' }, qualityLabel)),
+    warnings.length
+      ? el('div', {}, el('h3', {}, 'Validation warnings'),
+        el('ul', { class: 'warning-list' }, ...warnings.slice(0, 5).map((warning) => el('li', {}, warning))))
+      : qualityLabel === 'passed'
+        ? el('p', { class: 'quality-pass small' }, 'All drafting checks passed.')
+        : el('p', { class: 'warning small' }, 'Held for manual review.'),
+    qualityChecklist.length
+      ? el('div', {}, el('h3', {}, 'Sendability checklist'),
+        el('ul', { class: 'warning-list' }, ...qualityChecklist.map((check) =>
+          el('li', { class: check.passed ? 'quality-pass' : 'warning' },
+            (check.passed ? '✓ ' : '✕ ') + check.label))))
+      : null,
+    automation
+      ? el('p', { class: 'muted small' },
+        'Automation: ' + (automation.auto_repaired ? 'repaired' : 'passed first draft') +
+        ' · repair passes ' + (automation.repair_attempts || 0) +
+        (automation.used_fallback ? ' · safe fallback used' : ''))
+      : null,
+    el('h3', {}, 'Next-step plan'),
+    nextPlan ? el('div', { class: 'kv' },
+      el('div', {}, 'Email goal'), el('div', {}, nextPlan.email_goal || ''),
+      el('div', {}, 'Positive reply'), el('div', {}, nextPlan.on_positive_reply || ''),
+      el('div', {}, 'No reply'), el('div', {}, nextPlan.on_no_reply || ''),
+      el('div', {}, 'Approval'), el('div', {}, nextPlan.human_approval_required ? 'Human required' : 'Not specified')) :
+      el('p', { class: 'muted small' }, m.next_action || 'No next-step plan saved.'));
+
+  $('#modal-content').replaceChildren(
+    el('div', { class: 'row' },
+      el('h2', { class: 'grow', style: 'margin:0' }, 'Review draft'),
+      el('button', { onclick: () => closeLayer('modal') }, 'Close')),
+    el('p', { class: 'muted small', style: 'margin:6px 0 12px' },
+      'To ' + (m.to_email || '') + (m.lead_company ? ' · ' + m.lead_company : '') + (m.lead_segment ? ' · ' + m.lead_segment : '')),
+    el('div', { class: 'review-grid' },
+      el('section', {},
+        el('h3', {}, 'Generated email preview'),
+        el('div', { class: 'row', style: 'margin-bottom:8px' }, previewSubject, el('span', { class: 'grow' }), counter),
+        previewBody,
+        editor,
+        el('div', { class: 'button-stack' }, regenerateBtn, editBtn, saveBtn, approveBtn, reviewBtn)),
+      strategyPanel),
+    el('h3', {}, 'HTML signature (appended automatically at send)'),
+    footer
+      ? el('iframe', { class: 'signature-frame', title: 'System HTML signature preview', srcdoc: footer, sandbox: '' })
+      : el('p', { class: 'muted small' }, '(signature preview unavailable)')
+  );
+  $('#modal-wrap').classList.remove('hidden');
+}
+
+/* ---------- Replies tab ---------- */
+
+async function loadReplies() {
+  const params = new URLSearchParams();
+  const cls = $('#r-class').value;
+  if (cls) params.set('classification', cls);
+  const data = await api('/replies?' + params.toString());
+  const list = $('#replies-list');
+  const positive = data.replies.filter((r) => ['positive_interest','meeting_request','asks_for_more_info','referral_to_colleague'].includes(r.classification));
+  $('#next-steps').replaceChildren(...(positive.length
+    ? positive.map(nextStepCard)
+    : [el('p', { class: 'empty' }, 'No positive replies awaiting a next step.')]));
+  if (data.replies.length === 0) {
+    list.replaceChildren(el('p', { class: 'empty' }, 'No replies yet.'));
+    return;
+  }
+  list.replaceChildren(...data.replies.map((r) => el('div', { class: 'card' },
+    el('div', { class: 'row' },
+      el('b', {}, r.lead_company || r.from_email || ''),
+      chip(r.classification || 'unclear', 'cl-'),
+      r.confidence !== null && r.confidence !== undefined ? el('span', { class: 'chip' }, Math.round(r.confidence * 100) + '%') : null,
+      el('span', { class: 'muted small', style: 'margin-left:auto' }, fmtDate(r.created_at))),
+    el('div', { class: 'muted small' }, 'From: ' + (r.from_email || '') +
+      (r.lead_first_name || r.lead_last_name ? ' (' + [r.lead_first_name, r.lead_last_name].filter(Boolean).join(' ') + ')' : '')),
+    el('div', { class: 'muted small' }, 'Match: ' + (r.match_status || 'unmatched') +
+      ' · Next action: ' + (r.next_action || 'manual_review') +
+      ' · Sales stage: ' + (r.lead_sales_stage || r.sales_stage || 'manual_review')),
+    r.summary ? el('div', { style: 'margin:6px 0' }, r.summary) : null,
+    r.original_body ? el('details', {}, el('summary', { class: 'muted small' }, 'Original email'),
+      r.original_subject ? el('div', { class: 'small' }, el('b', {}, r.original_subject)) : null,
+      el('pre', {}, r.original_body)) : null,
+    el('details', {}, el('summary', { class: 'muted small' }, 'Reply text'), el('pre', {}, r.body || '')),
+    r.suggested_reply ? el('div', {},
+      el('h3', {}, 'Suggested reply (never auto-sent)'),
+      el('pre', {}, r.suggested_reply),
+      el('button', { onclick: async () => {
+        try { await navigator.clipboard.writeText(r.suggested_reply); toast('Copied - paste into Zoho Mail'); }
+        catch { toast('Copy failed', true); }
+      } }, 'Copy reply')) : null,
+    r.lead_id ? el('div', { class: 'row', style: 'margin-top:8px' },
+      el('button', { onclick: () => openLead(r.lead_id) }, 'Open lead')) : null,
+    r.lead_id ? replyActionButtons(r) : null
+  )));
+}
+
+function nextStepCard(r) {
+  return el('div', { class: 'card' },
+    el('div', { class: 'row' },
+      el('b', {}, [r.lead_first_name, r.lead_last_name].filter(Boolean).join(' ') || r.from_email || 'Unknown contact'),
+      r.lead_company ? el('span', { class: 'muted' }, r.lead_company) : null,
+      chip(r.classification, 'cl-')),
+    el('p', {}, r.summary || 'No summary available.'),
+    el('div', { class: 'kv' },
+      el('div', {}, 'Recommended action'), el('div', {}, r.next_action || 'manual_review'),
+      el('div', {}, 'Sales stage'), el('div', {}, r.lead_sales_stage || r.sales_stage || 'manual_review'),
+      el('div', {}, 'Confidence'), el('div', {}, Math.round((r.confidence || 0) * 100) + '%'),
+      el('div', {}, 'Original email'), el('div', {}, r.original_subject || 'Unavailable')),
+    r.original_body ? el('details', {}, el('summary', {}, 'Read original email'), el('pre', {}, r.original_body)) : null,
+    r.suggested_reply ? el('details', {}, el('summary', {}, 'Suggested reply'), el('pre', {}, r.suggested_reply)) : null,
+    r.lead_id ? replyActionButtons(r) :
+      el('p', { class: 'warning' }, 'Unmatched reply: review manually; it was stored and not dropped.'));
+}
+
+function replyActionButtons(r) {
+  const run = (label, action, confirmMessage = '') => el('button', { onclick: async () => {
+    if (!r.lead_id) return;
+    if (confirmMessage && !confirm(confirmMessage)) return;
+    await replyAction(r.lead_id, action, label);
+  } }, label);
+  return el('div', { class: 'row', style: 'margin-top:10px' },
+    run('Draft reply', 'draft_reply'),
+    run('Mark as demo interested', 'mark_demo_interested'),
+    run('Add to second batch', 'add_second_batch'),
+    run('Mark not interested', 'mark_not_interested', 'Mark this lead as not interested and stop future outreach?'),
+    run('Suppress', 'suppress', 'Suppress this email address immediately?'));
+}
+
+async function replyAction(leadId, action, label) {
+  try {
+    await api('/leads/' + leadId, { method: 'PATCH', body: { action } });
+    toast(label + ' saved.');
+    await Promise.all([loadReplies(), loadLeads(), refreshStats()]);
+  } catch (err) {
+    toast(err.message, true);
+  }
+}
+
+async function loadReplyDebug() {
+  const data = await api('/admin/replies/debug');
+  $('#reply-debug-summary').textContent = data.last_n8n_payload_timestamp
+    ? 'Last payload: ' + fmtDate(data.last_n8n_payload_timestamp) + ' · ' + (data.last_match_result || 'no match result')
+    : 'No reply ingest attempts recorded.';
+  $('#reply-debug-output').textContent = JSON.stringify(data.attempts, null, 2);
+}
+
+/* ---------- Suppression tab ---------- */
+
+async function loadSuppression() {
+  const data = await api('/suppression');
+  const tbody = $('#sup-table tbody');
+  if (data.suppression.length === 0) {
+    tbody.replaceChildren(el('tr', {}, el('td', { colspan: '5', class: 'empty' }, 'Suppression list is empty.')));
+    return;
+  }
+  tbody.replaceChildren(...data.suppression.map((s) => el('tr', { style: 'cursor:default' },
+    el('td', {}, s.kind),
+    el('td', {}, s.value),
+    el('td', {}, s.reason),
+    el('td', { class: 'muted small' }, fmtDate(s.created_at)),
+    el('td', {}, el('button', { class: 'danger small', onclick: async () => {
+      if (!confirm('Remove ' + s.value + ' from the suppression list? It becomes contactable again.')) return;
+      await api('/suppression/' + s.id, { method: 'DELETE' });
+      toast('Removed');
+      await loadSuppression();
+    } }, 'Remove'))
+  )));
+}
+
+/* ---------- Settings tab ---------- */
+
+async function loadSettings() {
+  const [data, wording, profileData, workspace] = await Promise.all([api('/admin/ai/models'), api('/admin/outreach/settings'), api('/sender-profiles'), api('/workspace-profile')]);
+  const select = $('#ai-model');
+  select.replaceChildren(...data.models.map((model) => el('option', { value: model }, model)));
+  select.value = data.activeModel;
+  $('#ai-model-meta').textContent =
+    'Active: ' + data.activeModel + ' · Provider: ' + data.provider + ' · Fallback: ' + data.fallbackModel;
+  const settings = wording.settings;
+  $('#outreach-greeting').value = settings.greeting;
+  $('#outreach-fallback-greeting').value = settings.fallbackGreeting;
+  $('#outreach-signoff').value = settings.signoff;
+  $('#outreach-sender-name').value = settings.senderName;
+  $('#outreach-sender-email').value = settings.senderEmail;
+  $('#outreach-sender-display').value = settings.senderDisplayName || workspace.profile.businessName || '';
+  $('#outreach-footer-html').value = settings.footerHtml || '';
+  updateFooterPreview();
+  renderProfiles(profileData.profiles || []);
+  const profile = workspace.profile;
+  const field = (id, value) => { $(id).value = Array.isArray(value) ? value.join('\n') : (value || ''); };
+  field('#workspace-business-name', profile.businessName); field('#workspace-website', profile.website); field('#workspace-industry', profile.industry); field('#workspace-description', profile.description);
+  field('#workspace-services', profile.services); field('#workspace-ideal-customer', profile.idealCustomer); field('#workspace-industries', profile.targetIndustries); field('#workspace-roles', profile.targetRoles);
+  field('#workspace-pain-points', profile.painPoints); field('#workspace-differentiators', profile.differentiators); field('#workspace-offer', profile.offer); field('#workspace-cta', profile.cta);
+  field('#workspace-tone', profile.tone); field('#workspace-geography', profile.geography); field('#workspace-claims', profile.claimsToAvoid);
+  const status = $('#workspace-profile-status'); status.textContent = profile.demoMode ? 'Demo mode: sending disabled' : workspace.issues.length ? 'Setup needed: ' + workspace.issues.join(', ') : 'Profile ready';
+  status.className = 'chip ' + (profile.demoMode || workspace.issues.length ? 'st-needs_review' : 'st-sent');
+  $('#workspace-demo-clear').classList.toggle('hidden', !profile.demoMode);
+  setDemoBadge(profile.demoMode);
+}
+
+function updateFooterPreview() {
+  const footer = $('#outreach-footer-html').value.trim();
+  const empty = '<p style="margin:0;color:#667085;font:14px Arial,sans-serif">Your HTML footer preview will appear here.</p>';
+  $('#outreach-footer-preview').srcdoc = '<!doctype html><html><body style="margin:16px">' + (footer || empty) + '</body></html>';
+}
+
+function profilePayload() {
+  return {
+    name: $('#profile-name').value.trim(), displayName: $('#profile-display').value.trim(), senderEmail: $('#profile-sender').value.trim(),
+    replyEmail: $('#profile-sender').value.trim(), ccEmail: $('#profile-cc').value.trim(), bccEmail: $('#profile-bcc').value.trim(),
+    greeting: $('#profile-greeting').value.trim(), fallbackGreeting: $('#profile-fallback').value.trim(), signoff: $('#profile-signoff').value.trim(),
+    senderName: $('#profile-sender-name').value.trim(), footerHtml: $('#profile-footer').value,
+    confirmZohoApproved: $('#profile-confirm-zoho').checked,
+    displayNameVerified: $('#profile-confirm-display').checked,
+  };
+}
+
+function updateProfileFooterPreview() {
+  const content = $('#profile-footer').value.trim() || '<p style="color:#667085">Footer preview</p>';
+  $('#profile-footer-preview').srcdoc = '<!doctype html><html><body style="margin:16px">' + content + '</body></html>';
+}
+
+function editProfile(profile = null) {
+  state.profileEditing = profile ? profile.id : null;
+  $('#profile-name').value = profile?.name || ''; $('#profile-display').value = profile?.display_name || '';
+  $('#profile-sender').value = profile?.sender_email || ''; $('#profile-cc').value = profile?.cc_email || ''; $('#profile-bcc').value = profile?.bcc_email || '';
+  $('#profile-greeting').value = profile?.greeting || 'Hi'; $('#profile-fallback').value = profile?.fallback_greeting || 'Hello';
+  $('#profile-signoff').value = profile?.signoff || 'Best regards'; $('#profile-sender-name').value = profile?.sender_name || '';
+  $('#profile-footer').value = profile?.footer_html || ''; $('#profile-confirm-zoho').checked = false; $('#profile-confirm-display').checked = profile?.display_name_verified === 1;
+  $('#profile-feedback').textContent = ''; updateProfileFooterPreview(); $('#profile-editor').classList.remove('hidden');
+}
+
+function renderProfiles(profiles) {
+  const list = $('#profile-list');
+  list.replaceChildren(...profiles.map((profile) => el('div', { class: 'card', style: 'padding:10px;margin:6px 0' },
+    el('div', { class: 'row' }, el('b', { class: 'grow' }, profile.name), chip(profile.is_verified ? 'verified' : 'unverified', profile.is_verified ? 'cl-' : 'st-'), profile.display_name_verified ? chip('name verified', 'cl-') : chip('name check needed', 'st-'), profile.is_active ? null : chip('inactive', 'st-')),
+    el('div', { class: 'muted small' }, `${profile.display_name || 'Sender identity not set'} · ${profile.sender_email} · replies arrive at the sender mailbox`),
+    el('div', { class: 'row', style: 'margin-top:6px' }, el('button', { onclick: () => editProfile(profile) }, 'Edit'))
+  )));
+}
+
+/* ---------- Campaigns ---------- */
+
+function campaignPayload() {
+  return {
+    name: $('#campaign-name').value.trim(), senderProfileId: $('#campaign-profile').value,
+    objective: $('#campaign-objective').value.trim(), ownerLabel: $('#campaign-owner').value.trim(),
+    notes: $('#campaign-notes').value.trim(), timezone: $('#campaign-timezone').value.trim(), status: $('#campaign-status').value,
+    startDate: $('#campaign-start').value, endDate: $('#campaign-end').value,
+    sendDays: $('#campaign-days').value.trim(), sendWindow: $('#campaign-window').value.trim(),
+    dailyCap: Number($('#campaign-daily-cap').value), sendStartTime: $('#campaign-start-time').value, sendIntervalMinutes: Number($('#campaign-interval').value), domainWeeklyCap: Number($('#campaign-domain-cap').value),
+    maximumVolume: $('#campaign-max-volume').value.trim(), qualityPolicy: $('#campaign-quality').value,
+    offer: $('#campaign-offer').value.trim(), cta: $('#campaign-cta').value.trim(), sectorAngle: $('#campaign-angle').value.trim(), tone: $('#campaign-tone').value.trim(),
+    autoSend: false, followUpEnabled: $('#campaign-follow-up').checked,
+    followUpDelayBusinessDays: Number($('#campaign-follow-up-days').value),
+    initialTemplate: $('#campaign-initial-template').value, followUpTemplate: $('#campaign-follow-template').value,
+  };
+}
+
+function fillCampaignForm(campaign = null) {
+  state.campaignEditing = campaign ? campaign.id : null;
+  $('#campaign-form-title').textContent = campaign ? 'Edit campaign' : 'New campaign';
+  $('#campaign-name').value = campaign?.name || '';
+  $('#campaign-profile').value = campaign?.sender_profile_id || $('#campaign-profile').value;
+  $('#campaign-objective').value = campaign?.objective || ''; $('#campaign-owner').value = campaign?.owner_label || '';
+  $('#campaign-notes').value = campaign?.notes || ''; $('#campaign-timezone').value = campaign?.timezone || 'UTC';
+  $('#campaign-status').value = campaign?.status || 'draft'; $('#campaign-days').value = campaign?.send_days || '1,2,3,4,5';
+  $('#campaign-start').value = campaign?.start_date || ''; $('#campaign-end').value = campaign?.end_date || '';
+  $('#campaign-window').value = campaign?.send_window || '09:00-16:00'; $('#campaign-daily-cap').value = campaign?.daily_cap || 10;
+  $('#campaign-send-plan').value = String(campaign?.daily_cap || 10) === '20' ? '20' : String(campaign?.daily_cap || 10) === '10' ? '10' : 'custom';
+  $('#campaign-start-time').value = campaign?.send_start_time || '09:00'; $('#campaign-interval').value = campaign?.send_interval_minutes || 2;
+  $('#campaign-domain-cap').value = campaign?.domain_weekly_cap || 2; $('#campaign-max-volume').value = campaign?.maximum_volume || '';
+  $('#campaign-quality').value = campaign?.quality_policy || 'balanced'; $('#campaign-offer').value = campaign?.offer || '';
+  $('#campaign-cta').value = campaign?.cta || ''; $('#campaign-angle').value = campaign?.sector_angle || ''; $('#campaign-tone').value = campaign?.tone || '';
+  $('#campaign-auto-send').checked = false; $('#campaign-follow-up').checked = campaign ? campaign.follow_up_enabled === 1 : true;
+  $('#campaign-follow-up-days').value = campaign?.follow_up_delay_business_days || 4; $('#campaign-initial-template').value = campaign?.initial_template || '';
+  $('#campaign-follow-template').value = campaign?.follow_up_template || ''; $('#campaign-feedback').textContent = '';
+  $('#campaign-form-wrap').classList.remove('hidden'); $('#campaign-name').focus();
+}
+
+async function loadCampaigns() {
+  const [data, profileData] = await Promise.all([api('/campaigns'), api('/sender-profiles')]);
+  const profile = $('#campaign-profile');
+  const current = profile.value;
+  profile.replaceChildren(...profileData.profiles.filter((p) => p.is_active).map((p) => el('option', { value: p.id }, `${p.name} · ${p.sender_email}${p.is_verified ? '' : ' (unverified)'}`)));
+  if (current) profile.value = current;
+  $('#lead-campaign').dataset.loaded = '';
+  const list = $('#campaign-list');
+  if (!data.campaigns.length) { list.replaceChildren(el('div', { class: 'card empty' }, 'No campaigns yet. Create a draft campaign, add leads, then activate it when ready.')); return; }
+  list.replaceChildren(...data.campaigns.map((c) => el('div', { class: 'card' },
+    el('div', { class: 'row' }, el('b', { class: 'grow' }, c.name), chip(c.status, 'st-'), el('span', { class: 'muted small' }, c.sender_profile_name || 'No sender profile')),
+    el('div', { class: 'muted small', style: 'margin-top:5px' }, `${c.audience_count || 0} audience · ${c.sent_count || 0} sent · ${c.replied_count || 0} replied · ${c.queued_count || 0} queued · ${c.attention_count || 0} attention`),
+    el('div', { class: 'muted small', style: 'margin-top:3px' }, `${c.send_window} ${c.timezone} · ${c.next_scheduled_at ? 'Next ' + fmtDate(c.next_scheduled_at) : 'No queued send'}`),
+    el('div', { class: 'row', style: 'margin-top:10px' },
+      el('button', { class: 'primary', onclick: () => openCampaign(c.id) }, 'Open'),
+      el('button', { onclick: () => fillCampaignForm(c) }, 'Edit'),
+      el('button', { onclick: async () => { try { await api('/campaigns/' + c.id + '/clone', { method: 'POST' }); toast('Campaign cloned as a draft'); await loadCampaigns(); } catch (err) { toast(err.message, true); } } }, 'Clone'),
+      c.status === 'active' ? el('button', { onclick: () => updateCampaignStatus(c.id, 'paused') }, 'Pause') : c.status === 'paused' || c.status === 'draft' ? el('button', { onclick: () => updateCampaignStatus(c.id, 'active') }, 'Activate') : null,
+      c.status !== 'archived' ? el('button', { class: 'danger', onclick: async () => { if (!confirm('Stop all unsent messages in this campaign? This cannot be undone.')) return; try { const result = await api('/campaigns/' + c.id + '/stop-unsent', { method: 'POST' }); toast(result.stopped + ' unsent message(s) stopped'); await Promise.all([loadCampaigns(), loadOverview(), refreshStats()]); } catch (err) { toast(err.message, true); } } }, 'Stop unsent') : null,
+      c.status !== 'archived' ? el('button', { class: 'danger', onclick: () => updateCampaignStatus(c.id, 'archived') }, 'Archive') : null
+    )
+  )));
+}
+
+async function updateCampaignStatus(id, status) {
+  try { await api('/campaigns/' + id, { method: 'PATCH', body: { status } }); toast('Campaign ' + status); await Promise.all([loadCampaigns(), loadOverview(), refreshStats()]); }
+  catch (err) { toast(err.message, true); }
+}
+
+async function openCampaign(id) {
+  const data = await api('/campaigns/' + id);
+  const c = data.campaign;
+  const ids = el('textarea', { rows: '3', placeholder: 'Paste lead IDs, separated by commas or new lines' });
+  const audience = el('div', {}, ...(data.audience.length ? data.audience.map((lead) => el('div', { class: 'row card', style: 'padding:8px;margin:6px 0' },
+    el('span', { class: 'grow' }, lead.email, lead.company ? ' · ' + lead.company : '', lead.role ? ' · ' + lead.role : ''), chip(lead.campaign_status, 'st-'), lead.status_reason ? el('span', { class: 'muted small' }, lead.status_reason) : null)) : [el('p', { class: 'empty' }, 'No leads assigned yet.')]));
+  const timeline = el('div', { class: 'timeline' }, ...(data.events.length ? data.events.map((event) => el('div', {}, el('b', {}, event.event), ' ', el('span', { class: 'muted' }, fmtDate(event.created_at)))) : [el('div', { class: 'muted' }, 'No campaign activity yet.')]));
+  const add = el('button', { class: 'primary' }, 'Add leads');
+  add.addEventListener('click', async () => {
+    const leadIds = ids.value.split(/[\s,]+/).map((v) => v.trim()).filter(Boolean);
+    if (!leadIds.length) { toast('Paste at least one lead ID', true); return; }
+    add.disabled = true;
+    try { await api('/campaigns/' + id + '/leads', { method: 'POST', body: { leadIds } }); toast(leadIds.length + ' lead(s) assigned'); closeLayer('modal'); await openCampaign(id); await loadCampaigns(); }
+    catch (err) { toast(err.message, true); } finally { add.disabled = false; }
+  });
+  const draft = el('button', {}, 'Generate eligible drafts');
+  draft.addEventListener('click', async () => {
+    const eligible = data.audience.filter((lead) => lead.campaign_status === 'eligible');
+    if (!eligible.length) { toast('No eligible leads to draft', true); return; }
+    draft.disabled = true; let completed = 0;
+    try { for (const lead of eligible) { await api('/leads/' + lead.id + '/draft', { method: 'POST', body: {} }); completed++; } toast(completed + ' draft(s) generated'); await openCampaign(id); await loadCampaigns(); }
+    catch (err) { toast(completed + ' drafted. ' + err.message, true); } finally { draft.disabled = false; }
+  });
+  $('#modal-content').replaceChildren(
+    el('div', { class: 'row' }, el('h2', { class: 'grow', style: 'margin:0' }, c.name), chip(c.status, 'st-'), el('button', { onclick: () => closeLayer('modal') }, 'Close')),
+    el('div', { class: 'kv' }, el('div', {}, 'Sender'), el('div', {}, data.profile ? `${data.profile.name} · ${data.profile.sender_email}` : 'Missing'), el('div', {}, 'Approval'), el('div', {}, `${c.follow_up_enabled ? 'human-reviewed follow-up in ' + c.follow_up_delay_business_days + ' business days' : 'manual drafts only'} · all email requires human approval`), el('div', {}, 'Policy'), el('div', {}, `${c.quality_policy} · ${c.daily_cap}/day · ${c.domain_weekly_cap}/domain/week`), el('div', {}, 'Next send'), el('div', {}, c.next_scheduled_at ? fmtDate(c.next_scheduled_at) : 'Nothing queued yet')),
+    el('h3', {}, 'Audience'), ids, el('div', { class: 'row', style: 'margin-top:8px' }, add, draft), audience,
+    el('h3', {}, 'Funnel'), el('pre', {}, JSON.stringify(data.funnel, null, 2)),
+    el('h3', {}, 'Activity'), timeline
+  );
+  $('#modal-wrap').classList.remove('hidden');
+}
+
+/* ---------- Tabs / init ---------- */
+
+const loaders = {
+  pipeline: loadPipeline,
+  campaigns: loadCampaigns,
+  drafts: loadDrafts,
+  queue: loadQueue,
+  sent: loadSent,
+  replies: loadReplies,
+  suppression: loadSuppression,
+  add: async () => {},
+  settings: loadSettings,
+};
+
+function switchTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('main > section').forEach((s) => s.classList.toggle('hidden', s.id !== 'tab-' + tab));
+  loaders[tab]().catch((err) => { if (String(err.message) !== 'Unauthorized') toast(err.message, true); });
+}
+
+function fillSelect(select, values) {
+  for (const v of values) select.append(el('option', { value: v }, v));
+}
+
+function setDemoBadge(active) {
+  $('#demo-badge').classList.toggle('hidden', !active);
+}
+
+const onboardingCopy = {
+  1: ['Welcome to Outreach Studio', 'Start with a fictional example or configure your own business. Demo mode can generate drafts but never send.'],
+  2: ['Tell us about your business', 'This information establishes who you are and what you do. It becomes the source context for scoring and drafts.'],
+  3: ['Choose your audience and offer', 'Describe who you help, the problems you solve, and one useful next step to offer.'],
+  4: ['Set your sender identity', 'Use an address approved in your Zoho Mail account. OAuth credentials stay in Cloudflare secrets and are never entered here.'],
+};
+
+function setOnboardingStep(step) {
+  const current = Math.min(4, Math.max(1, step));
+  const [title, copy] = onboardingCopy[current];
+  $('#onboarding-title').textContent = title;
+  $('#onboarding-copy').textContent = copy;
+  $('#onboarding-step-count').textContent = `Step ${current} of 4`;
+  document.querySelectorAll('#onboarding-page-1, #onboarding-page-2, #onboarding-page-3, #onboarding-page-4').forEach((page, index) => page.classList.toggle('hidden', index + 1 !== current));
+  document.querySelectorAll('.setup-steps span').forEach((bar, index) => bar.classList.toggle('active', index < current));
+  $('#onboarding-back').classList.toggle('hidden', current === 1);
+  $('#onboarding-next').classList.toggle('hidden', current === 1 || current === 4);
+  $('#onboarding-finish').classList.toggle('hidden', current !== 4);
+  $('#onboarding-feedback').textContent = '';
+}
+
+function setSetupField(id, value) {
+  const field = $('#' + id);
+  field.value = Array.isArray(value) ? value.join('\n') : value || '';
+}
+
+async function showOnboarding() {
+  const [status, wording] = await Promise.all([api('/onboarding'), api('/admin/outreach/settings')]);
+  setDemoBadge(status.demoMode);
+  if (status.complete || status.demoMode) return;
+  const profile = status.profile;
+  for (const [field, value] of Object.entries({
+    'setup-business-name': profile.businessName, 'setup-industry': profile.industry, 'setup-website': profile.website,
+    'setup-description': profile.description, 'setup-services': profile.services, 'setup-tone': profile.tone,
+    'setup-geography': profile.geography, 'setup-ideal-customer': profile.idealCustomer,
+    'setup-industries': profile.targetIndustries, 'setup-roles': profile.targetRoles,
+    'setup-pain-points': profile.painPoints, 'setup-differentiators': profile.differentiators,
+    'setup-offer': profile.offer, 'setup-cta': profile.cta, 'setup-claims': profile.claimsToAvoid,
+  })) setSetupField(field, value);
+  const settings = wording.settings;
+  setSetupField('setup-sender-email', settings.senderEmail);
+  setSetupField('setup-sender-display', profile.businessName || (settings.senderDisplayName === 'Outreach Studio' ? '' : settings.senderDisplayName));
+  setSetupField('setup-sender-name', settings.senderName);
+  setSetupField('setup-greeting', settings.greeting || 'Hi');
+  setSetupField('setup-fallback-greeting', settings.fallbackGreeting || 'Hello');
+  setSetupField('setup-signoff', settings.signoff || 'Best regards');
+  setOnboardingStep(1);
+  $('#onboarding').classList.remove('hidden');
+}
+
+function setupLines(id) {
+  return $('#' + id).value.split('\n').map((value) => value.trim()).filter(Boolean);
+}
+
+function setupProfilePayload() {
+  return {
+    businessName: $('#setup-business-name').value.trim(), website: $('#setup-website').value.trim(),
+    industry: $('#setup-industry').value.trim(), description: $('#setup-description').value.trim(),
+    services: setupLines('setup-services'), idealCustomer: $('#setup-ideal-customer').value.trim(),
+    targetIndustries: setupLines('setup-industries'), targetRoles: setupLines('setup-roles'),
+    painPoints: setupLines('setup-pain-points'), differentiators: setupLines('setup-differentiators'),
+    offer: $('#setup-offer').value.trim(), cta: $('#setup-cta').value.trim(), tone: $('#setup-tone').value.trim(),
+    geography: $('#setup-geography').value.trim(), claimsToAvoid: setupLines('setup-claims'),
+  };
+}
+
+function validateOnboardingStep(step) {
+  const profile = setupProfilePayload();
+  if (step === 2) {
+    if (!profile.businessName || !profile.industry || profile.description.length < 20 || !profile.services.length) return 'Add a business name, industry, a 20-character description, and at least one service.';
+  }
+  if (step === 3) {
+    if (profile.idealCustomer.length < 10 || profile.offer.length < 3 || (profile.cta.match(/\?/g) || []).length !== 1) return 'Describe your ideal customer, add an offer, and provide one CTA question.';
+  }
+  return '';
+}
+
+$('#onboarding-real').addEventListener('click', () => setOnboardingStep(2));
+$('#onboarding-demo').addEventListener('click', async () => {
+  const button = $('#onboarding-demo'); button.disabled = true;
+  try {
+    await api('/demo/seed', { method: 'POST' });
+    $('#onboarding').classList.add('hidden'); setDemoBadge(true);
+    toast('Safe demo loaded. Scoring and drafting are available; sending is disabled.');
+    await Promise.all([refreshStats(), loadSettings()]);
+  } catch (err) { $('#onboarding-feedback').className = 'feedback bad'; $('#onboarding-feedback').textContent = err.message; }
+  finally { button.disabled = false; }
+});
+$('#onboarding-back').addEventListener('click', () => {
+  const active = [...document.querySelectorAll('#onboarding-page-1, #onboarding-page-2, #onboarding-page-3, #onboarding-page-4')].findIndex((page) => !page.classList.contains('hidden')) + 1;
+  setOnboardingStep(active - 1);
+});
+$('#onboarding-next').addEventListener('click', () => {
+  const active = [...document.querySelectorAll('#onboarding-page-1, #onboarding-page-2, #onboarding-page-3, #onboarding-page-4')].findIndex((page) => !page.classList.contains('hidden')) + 1;
+  const error = validateOnboardingStep(active);
+  if (error) { $('#onboarding-feedback').className = 'feedback bad'; $('#onboarding-feedback').textContent = error; return; }
+  setOnboardingStep(active + 1);
+  if (active === 3 && !$('#setup-sender-display').value.trim()) $('#setup-sender-display').value = $('#setup-business-name').value.trim();
+});
+$('#onboarding-finish').addEventListener('click', async () => {
+  const button = $('#onboarding-finish'); const feedback = $('#onboarding-feedback');
+  const profile = setupProfilePayload();
+  const senderEmail = $('#setup-sender-email').value.trim();
+  if (!senderEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
+    feedback.className = 'feedback bad'; feedback.textContent = 'Enter the email address you have approved in Zoho Mail.'; return;
+  }
+  if (!$('#setup-zoho-approved').checked) {
+    feedback.className = 'feedback bad'; feedback.textContent = 'Confirm the Zoho sender identity before completing setup.'; return;
+  }
+  button.disabled = true; feedback.className = 'feedback'; feedback.textContent = 'Saving your workspace…';
+  try {
+    await api('/workspace-profile', { method: 'PUT', body: profile });
+    await api('/admin/outreach/settings', { method: 'POST', body: {
+      greeting: $('#setup-greeting').value.trim() || 'Hi',
+      fallbackGreeting: $('#setup-fallback-greeting').value.trim() || 'Hello',
+      signoff: $('#setup-signoff').value.trim() || 'Best regards',
+      senderName: $('#setup-sender-name').value.trim(),
+      senderEmail,
+      senderDisplayName: $('#setup-sender-display').value.trim() || profile.businessName,
+      cta: profile.cta,
+    } });
+    const senderProfiles = await api('/sender-profiles');
+    const senderProfile = (senderProfiles.profiles || []).find((item) => item.sender_email.toLowerCase() === senderEmail.toLowerCase());
+    const senderProfilePayload = {
+      name: ('Primary · ' + profile.businessName).slice(0, 100),
+      displayName: $('#setup-sender-display').value.trim() || profile.businessName,
+      senderEmail, replyEmail: senderEmail, greeting: $('#setup-greeting').value.trim() || 'Hi',
+      fallbackGreeting: $('#setup-fallback-greeting').value.trim() || 'Hello',
+      signoff: $('#setup-signoff').value.trim() || 'Best regards',
+      senderName: $('#setup-sender-name').value.trim(),
+      confirmZohoApproved: true, displayNameVerified: true, isActive: true,
+    };
+    if (senderProfile) await api('/sender-profiles/' + senderProfile.id, { method: 'PATCH', body: senderProfilePayload });
+    else await api('/sender-profiles', { method: 'POST', body: senderProfilePayload });
+    const status = await api('/onboarding');
+    if (!status.complete) throw new Error('Your business profile or sender identity is still incomplete. Review the required fields and try again.');
+    $('#onboarding').classList.add('hidden'); setDemoBadge(false);
+    await Promise.all([loadSettings(), refreshStats()]);
+    toast('Workspace setup complete. New drafts will use ' + profile.businessName + '.');
+  } catch (err) { feedback.className = 'feedback bad'; feedback.textContent = err.message; }
+  finally { button.disabled = false; }
+});
+
+async function boot() {
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  await refreshStats();
+  switchTab(state.tab);
+  try { await showOnboarding(); } catch (err) { if (String(err.message) !== 'Unauthorized') toast('Setup status could not be loaded: ' + err.message, true); }
+}
+
+fillSelect($('#f-status'), LEAD_STATUSES);
+fillSelect($('#f-segment'), SEGMENTS);
+fillSelect($('#r-class'), CLASSIFICATIONS);
+$('#draft-queue-start').value = localDateTimeInputValue(new Date(Date.now() + 2 * 60_000));
+
+$('#tabs').addEventListener('click', (e) => {
+  const tab = e.target && e.target.dataset && e.target.dataset.tab;
+  if (tab) switchTab(tab);
+});
+$('#f-apply').addEventListener('click', () => { state.page = 0; loadLeads().catch((e) => toast(e.message, true)); });
+$('#f-q').addEventListener('keydown', (e) => { if (e.key === 'Enter') { state.page = 0; loadLeads().catch((er) => toast(er.message, true)); } });
+$('#f-advance').addEventListener('click', async () => {
+  try {
+    toast('Running pipeline…');
+    const r = await api('/pipeline/advance', { method: 'POST', body: {} });
+    toast('Scored ' + r.scored + ', drafted ' + r.drafted + (r.errors.length ? ', ' + r.errors.length + ' error(s)' : ''));
+    await Promise.all([loadLeads(), refreshStats()]);
+  } catch (err) { toast(err.message, true); }
+});
+$('#page-prev').addEventListener('click', () => { if (state.page > 0) { state.page--; loadLeads(); } });
+$('#page-next').addEventListener('click', () => {
+  if ((state.page + 1) * state.pageSize < state.total) { state.page++; loadLeads(); }
+});
+$('#drafts-refresh').addEventListener('click', () => loadDrafts().catch((e) => toast(e.message, true)));
+$('#queue-refresh').addEventListener('click', () => loadQueue().catch((e) => toast(e.message, true)));
+$('#queue-filter-state').addEventListener('change', () => loadQueue().catch((e) => toast(e.message, true)));
+$('#queue-filter-q').addEventListener('input', () => loadQueue().catch((e) => toast(e.message, true)));
+$('#queue-select-visible').addEventListener('click', () => {
+  for (const message of state.queueMessages) if (message.status === 'queued') state.queueSelection.add(message.id);
+  $('#queue-selection-status').textContent = state.queueSelection.size + ' selected';
+  loadQueue().catch((e) => toast(e.message, true));
+});
+$('#queue-clear-selection').addEventListener('click', () => {
+  state.queueSelection.clear();
+  $('#queue-selection-status').textContent = '0 selected';
+  loadQueue().catch((e) => toast(e.message, true));
+});
+$('#queue-cancel-selected').addEventListener('click', async () => {
+  const ids = [...state.queueSelection];
+  if (!ids.length) { toast('Select at least one queued message', true); return; }
+  if (!confirm('Cancel ' + ids.length + ' queued message(s)?')) return;
+  const button = $('#queue-cancel-selected'); button.disabled = true;
+  let cancelled = 0;
+  try {
+    for (const id of ids) {
+      try { await api('/messages/' + id + '/cancel', { method: 'POST' }); cancelled++; } catch { /* report aggregate below */ }
+    }
+    state.queueSelection.clear();
+    toast(cancelled + ' queued message(s) cancelled');
+    await Promise.all([loadQueue(), loadOverview(), refreshStats()]);
+  } finally { button.disabled = false; }
+});
+$('#draft-queue-plan').addEventListener('change', () => {
+  const plan = $('#draft-queue-plan').value;
+  if (plan !== 'custom') $('#draft-send-amount').value = plan;
+});
+$('#campaign-send-plan').addEventListener('change', () => {
+  const plan = $('#campaign-send-plan').value;
+  if (plan !== 'custom') $('#campaign-daily-cap').value = plan;
+});
+$('#sent-refresh').addEventListener('click', () => loadSent().catch((e) => toast(e.message, true)));
+$('#sent-filter-company').addEventListener('input', () => loadSent().catch((e) => toast(e.message, true)));
+$('#drafts-regenerate-all').addEventListener('click', () => regenerateVisibleDrafts().catch((e) => toast(e.message, true)));
+['#draft-view', '#draft-date-from', '#draft-date-to', '#draft-date-sort'].forEach((selector) => {
+  $(selector).addEventListener('change', () => loadDrafts().catch((e) => toast(e.message, true)));
+});
+$('#lead-assign').addEventListener('click', async () => {
+  const campaignId = $('#lead-campaign').value; const leadIds = [...state.leadSelection];
+  if (!campaignId || !leadIds.length) { toast('Select at least one lead and a campaign', true); return; }
+  try { await api('/campaigns/' + campaignId + '/leads', { method: 'POST', body: { leadIds } }); state.leadSelection.clear(); toast(leadIds.length + ' lead(s) assigned'); await loadLeads(); }
+  catch (err) { toast(err.message, true); }
+});
+$('#campaign-new').addEventListener('click', () => fillCampaignForm());
+$('#campaign-cancel').addEventListener('click', () => $('#campaign-form-wrap').classList.add('hidden'));
+$('#campaigns-refresh').addEventListener('click', () => loadCampaigns().catch((e) => toast(e.message, true)));
+$('#campaign-save').addEventListener('click', async () => {
+  const button = $('#campaign-save'); const feedback = $('#campaign-feedback');
+  button.disabled = true; feedback.textContent = 'Saving…';
+  try {
+    const payload = campaignPayload();
+    const result = state.campaignEditing
+      ? await api('/campaigns/' + state.campaignEditing, { method: 'PATCH', body: payload })
+      : await api('/campaigns', { method: 'POST', body: payload });
+    feedback.className = 'feedback success'; feedback.textContent = 'Campaign saved.';
+    $('#campaign-form-wrap').classList.add('hidden'); await loadCampaigns();
+    if (result.campaign) toast('Campaign saved');
+  } catch (err) { feedback.className = 'feedback bad'; feedback.textContent = err.message; }
+  finally { button.disabled = false; }
+});
+$('#drafts-select-visible').addEventListener('click', () => {
+  for (const message of visibleDrafts()) state.draftSelection.add(message.id);
+  updateDraftSelectionStatus();
+  loadDrafts().catch((e) => toast(e.message, true));
+});
+$('#drafts-clear-selection').addEventListener('click', () => {
+  state.draftSelection.clear();
+  updateDraftSelectionStatus();
+  loadDrafts().catch((e) => toast(e.message, true));
+});
+$('#drafts-send-selected').addEventListener('click', () => sendSelectedDrafts().catch((e) => toast(e.message, true)));
+['#draft-filter-company', '#draft-filter-industry', '#draft-filter-segment'].forEach((selector) => {
+  $(selector).addEventListener('input', () => loadDrafts().catch((e) => toast(e.message, true)));
+  $(selector).addEventListener('change', () => loadDrafts().catch((e) => toast(e.message, true)));
+});
+$('#replies-refresh').addEventListener('click', () => loadReplies().catch((e) => toast(e.message, true)));
+$('#reply-debug-refresh').addEventListener('click', () => loadReplyDebug().catch((e) => toast(e.message, true)));
+$('#s-add').addEventListener('click', async () => {
+  try {
+    const value = $('#s-value').value.trim();
+    if (!value) { toast('Enter a value', true); return; }
+    await api('/suppression', { method: 'POST', body: { kind: $('#s-kind').value, value, reason: $('#s-reason').value.trim() || 'manual' } });
+    $('#s-value').value = ''; $('#s-reason').value = '';
+    toast('Suppressed');
+    await loadSuppression();
+  } catch (err) { toast(err.message, true); }
+});
+$('#ai-model-save').addEventListener('click', async () => {
+  const btn = $('#ai-model-save');
+  const feedback = $('#ai-model-feedback');
+  btn.disabled = true;
+  feedback.className = 'feedback';
+  feedback.textContent = 'Saving model…';
+  try {
+    const data = await api('/admin/ai/model', { method: 'POST', body: { model: $('#ai-model').value } });
+    await loadSettings();
+    feedback.className = 'feedback success';
+    feedback.textContent = 'Active model updated to ' + data.activeModel + '.';
+  } catch (err) {
+    feedback.className = 'feedback bad';
+    feedback.textContent = 'Model update failed. ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+$('#outreach-footer-html').addEventListener('input', updateFooterPreview);
+function workspaceProfilePayload() {
+  const lines = (selector) => $(selector).value.split('\n').map((value) => value.trim()).filter(Boolean);
+  return { businessName: $('#workspace-business-name').value.trim(), website: $('#workspace-website').value.trim(), industry: $('#workspace-industry').value.trim(), description: $('#workspace-description').value.trim(), services: lines('#workspace-services'), idealCustomer: $('#workspace-ideal-customer').value.trim(), targetIndustries: lines('#workspace-industries'), targetRoles: lines('#workspace-roles'), painPoints: lines('#workspace-pain-points'), differentiators: lines('#workspace-differentiators'), offer: $('#workspace-offer').value.trim(), cta: $('#workspace-cta').value.trim(), tone: $('#workspace-tone').value.trim(), geography: $('#workspace-geography').value.trim(), claimsToAvoid: lines('#workspace-claims') };
+}
+$('#workspace-profile-save').addEventListener('click', async () => {
+  const feedback = $('#workspace-profile-feedback'); feedback.className = 'feedback'; feedback.textContent = 'Saving…';
+  try { await api('/workspace-profile', { method: 'PUT', body: workspaceProfilePayload() }); feedback.className = 'feedback success'; feedback.textContent = 'Business profile saved.'; await loadSettings(); }
+  catch (err) { feedback.className = 'feedback bad'; feedback.textContent = err.message; }
+});
+$('#workspace-demo-seed').addEventListener('click', async () => {
+  const feedback = $('#workspace-profile-feedback');
+  try { await api('/demo/seed', { method: 'POST' }); feedback.className = 'feedback success'; feedback.textContent = 'Safe demo loaded. Sending is disabled.'; await loadSettings(); }
+  catch (err) { feedback.className = 'feedback bad'; feedback.textContent = err.message; }
+});
+$('#workspace-demo-clear').addEventListener('click', async () => {
+  if (!confirm('Leave demo mode and remove only fictional demo leads and drafts?')) return;
+  const feedback = $('#workspace-profile-feedback');
+  try { await api('/demo/clear', { method: 'POST' }); feedback.className = 'feedback success'; feedback.textContent = 'Demo data cleared. Complete your profile.'; await loadSettings(); setDemoBadge(false); await showOnboarding(); }
+  catch (err) { feedback.className = 'feedback bad'; feedback.textContent = err.message; }
+});
+$('#profile-new').addEventListener('click', () => editProfile());
+$('#profile-cancel').addEventListener('click', () => $('#profile-editor').classList.add('hidden'));
+$('#profile-footer').addEventListener('input', updateProfileFooterPreview);
+$('#profile-save').addEventListener('click', async () => {
+  const button = $('#profile-save'); const feedback = $('#profile-feedback'); button.disabled = true; feedback.textContent = 'Saving…';
+  try {
+    const payload = profilePayload();
+    if (state.profileEditing) await api('/sender-profiles/' + state.profileEditing, { method: 'PATCH', body: payload });
+    else await api('/sender-profiles', { method: 'POST', body: payload });
+    feedback.className = 'feedback success'; feedback.textContent = 'Sender profile saved.'; $('#profile-editor').classList.add('hidden'); await loadSettings();
+  } catch (err) { feedback.className = 'feedback bad'; feedback.textContent = err.message; }
+  finally { button.disabled = false; }
+});
+$('#outreach-settings-save').addEventListener('click', async () => {
+  const btn = $('#outreach-settings-save');
+  const feedback = $('#outreach-settings-feedback');
+  btn.disabled = true;
+  feedback.className = 'feedback';
+  feedback.textContent = 'Saving…';
+  try {
+    await api('/admin/outreach/settings', { method: 'POST', body: {
+      greeting: $('#outreach-greeting').value,
+      fallbackGreeting: $('#outreach-fallback-greeting').value,
+      signoff: $('#outreach-signoff').value,
+      senderName: $('#outreach-sender-name').value,
+      senderEmail: $('#outreach-sender-email').value,
+      senderDisplayName: $('#outreach-sender-display').value,
+      footerHtml: $('#outreach-footer-html').value,
+    } });
+    feedback.className = 'feedback success';
+    feedback.textContent = 'Saved. New drafts will use these values.';
+  } catch (err) {
+    feedback.className = 'feedback bad';
+    feedback.textContent = err.message;
+  } finally { btn.disabled = false; }
+});
+$('#a-save').addEventListener('click', async () => {
+  try {
+    const bulkText = $('#a-bulk-emails').value.trim();
+    const emailPattern = /[A-Z0-9](?:[A-Z0-9._%+-]*[A-Z0-9])?@[A-Z0-9](?:[A-Z0-9.-]*[A-Z0-9])?\.[A-Z]{2,}/gi;
+    const detectedEmails = [...new Set((bulkText.match(emailPattern) || []).map((email) => email.toLowerCase()))];
+    const singleEmail = $('#a-email').value.trim().toLowerCase();
+    const emails = detectedEmails.length ? detectedEmails : (singleEmail ? [singleEmail] : []);
+    const leadDetails = {
+      firstName: $('#a-first').value.trim(),
+      lastName: $('#a-last').value.trim(),
+      role: $('#a-role').value.trim(),
+      company: $('#a-company').value.trim(),
+      companyWebsite: $('#a-website').value.trim(),
+      industry: $('#a-industry').value.trim(),
+      subIndustry: $('#a-sub-industry').value.trim(),
+      country: $('#a-country').value.trim(),
+      source: $('#a-source').value,
+      notes: $('#a-notes').value.trim(),
+    };
+    const structuredRows = parseLeadTable(bulkText);
+    const leads = structuredRows.length
+      ? structuredRows.map((row) => ({
+        ...leadDetails,
+        email: row.email,
+        firstName: row.firstName || leadDetails.firstName,
+        lastName: row.lastName || leadDetails.lastName,
+        company: row.company || leadDetails.company,
+        companyWebsite: row.companyWebsite || leadDetails.companyWebsite,
+        role: row.role || leadDetails.role,
+        country: row.country || leadDetails.country,
+        contactProfileUrl: row.contactProfileUrl,
+        notes: [leadDetails.notes, row.notes].filter(Boolean).join('\n'),
+      }))
+      : emails.map((email) => ({ email, ...leadDetails }));
+    if (!leads.length) { toast('Enter an email or paste a TSV/CSV table with email addresses', true); return; }
+    const r = await api('/leads', { method: 'POST', body: { leads: leads } });
+    const inserted = r.results.filter((row) => row.result === 'inserted').length;
+    const duplicates = r.results.filter((row) => row.result === 'duplicate_email').length;
+    const duplicateLeads = leads.filter((_lead, index) => r.results[index]?.result === 'duplicate_email');
+    let forcedInserted = 0;
+    if (duplicateLeads.length && confirm(duplicates + ' lead' + (duplicates === 1 ? '' : 's') + ' already exist. Add them anyway?')) {
+      const forced = await api('/leads', { method: 'POST', body: { leads: duplicateLeads, allowDuplicates: true } });
+      forcedInserted = forced.results.filter((row) => row.result === 'inserted').length;
+    }
+    $('#a-result').textContent = `${inserted + forcedInserted} added${duplicates ? `, ${duplicates} duplicate${duplicates === 1 ? '' : 's'}` : ''} (${leads.length} detected)`;
+    if (inserted + forcedInserted > 0) {
+      ['#a-email','#a-bulk-emails','#a-first','#a-last','#a-role','#a-company','#a-website','#a-industry','#a-sub-industry','#a-country','#a-notes'].forEach((s) => { $(s).value = ''; });
+      toast(`${inserted} lead${inserted === 1 ? '' : 's'} added`);
+      await refreshStats();
+    } else {
+      toast('No new leads were added', true);
+    }
+  } catch (err) { toast(err.message, true); }
+});
+$('#logout').addEventListener('click', lock);
+$('#login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  state.token = $('#login-token').value.trim();
+  try {
+    await api('/stats');
+    localStorage.setItem('outreach_token', state.token);
+    $('#login-token').value = '';
+    $('#login-error').classList.add('hidden');
+    await boot();
+  } catch {
+    $('#login-error').textContent = 'That PIN was rejected.';
+    $('#login-error').classList.remove('hidden');
+  }
+});
+
+if (state.token) {
+  boot();
+} else {
+  $('#login').classList.remove('hidden');
+}
+
+/* Keep stats fresh while the tab is open. */
+setInterval(() => { if (state.token && !document.hidden) refreshStats(); }, 60000);
+</script>
+</body>
+</html>

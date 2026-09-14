@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connect Zoho Mail · Outreach Studio</title>
+  <style>
+    :root { color-scheme: light; --ink:#17324d; --muted:#5d7185; --line:#dbe5ec; --accent:#0b7a75; --bg:#f5f8fa; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { width:min(760px,calc(100% - 32px)); margin:38px auto; padding:30px; background:#fff; border:1px solid var(--line); border-radius:16px; }
+    h1 { margin:0 0 8px; line-height:1.15; }
+    h2 { margin:24px 0 8px; font-size:18px; }
+    p,li { color:var(--muted); }
+    a { color:var(--accent); }
+    code { padding:2px 5px; background:#eef4f5; border-radius:4px; color:var(--ink); }
+    .note { padding:12px 14px; border-left:3px solid var(--accent); background:#f3faf8; }
+  </style>
+</head>
+<body>
+  <main>
+    <p><a href="/admin">← Back to Outreach Studio</a></p>
+    <h1>Connect your Zoho Mail account</h1>
+    <p>Each self-hosted workspace uses its own Zoho account, OAuth credentials, and verified sender address. Keep sending in dry-run mode while you set this up.</p>
+    <h2>1. Create OAuth credentials</h2>
+    <ol>
+      <li>Sign in as the Zoho Mail account owner and create a Self Client in the <a href="https://api-console.zoho.com/" target="_blank" rel="noreferrer">Zoho API Console</a>.</li>
+      <li>Generate a grant code with <code>ZohoMail.messages.CREATE,ZohoMail.accounts.READ</code>.</li>
+      <li>Exchange it at your region’s Zoho OAuth endpoint and securely save the refresh token.</li>
+    </ol>
+    <h2>2. Configure Cloudflare</h2>
+    <ol>
+      <li>Set <code>ZOHO_MAIL_BASE</code> and <code>ZOHO_ACCOUNTS_BASE</code> for your Zoho data center.</li>
+      <li>Call Zoho’s <a href="https://www.zoho.com/mail/help/api/account-api.html" target="_blank" rel="noreferrer">accounts API</a> and place the matching <code>accountId</code> in <code>ZOHO_ACCOUNT_ID</code>.</li>
+      <li>Store <code>ZOHO_CLIENT_ID</code>, <code>ZOHO_CLIENT_SECRET</code>, and <code>ZOHO_REFRESH_TOKEN</code> as Cloudflare Worker secrets. Never enter them in this dashboard.</li>
+    </ol>
+    <h2>3. Verify sender identity</h2>
+    <p>In Zoho Mail, confirm the sender address and display name under <b>Send Mail As</b>. Use that exact identity in the setup wizard and confirm it there. Zoho only accepts From addresses associated with the authenticated account.</p>
+    <p class="note">Outreach Studio requires human approval for every real outbound message. Keep <code>DRY_RUN=true</code> until you have tested the verified sender with an address you control.</p>
+    <p>Full instructions: <a href="https://www.zoho.com/mail/help/api/using-oauth-2.html" target="_blank" rel="noreferrer">Zoho OAuth guide</a> · <a href="https://www.zoho.com/mail/help/api/post-send-an-email.html" target="_blank" rel="noreferrer">Zoho send email API</a>.</p>
+  </main>
+</body>
+</html>

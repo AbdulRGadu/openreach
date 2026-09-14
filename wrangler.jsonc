@@ -1,0 +1,76 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "outreach-studio",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/admin/ai/*", "/admin/replies/*", "/replies/*", "/unsubscribe", "/health"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "outreach-studio-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  "queues": {
+    "producers": [{ "binding": "SEND_QUEUE", "queue": "outreach-send" }],
+    "consumers": [
+      {
+        "queue": "outreach-send",
+        "max_batch_size": 5,
+        "max_batch_timeout": 10,
+        "max_retries": 12,
+        "dead_letter_queue": "outreach-send-dlq"
+      }
+    ]
+  },
+  "triggers": {
+    // Both crons are UTC. Configure TIMEZONE and campaign windows for your audience.
+    // */15: sweeper (stuck sends, stale queued rows).
+    // 7-15/2 Mon-Fri: pipeline advancer runs on a broad UTC weekday window.
+    "crons": ["*/15 * * * *", "0 7-15/2 * * 1-5"]
+  },
+  "vars": {
+    "CF_ACCOUNT_ID": "REPLACE_WITH_YOUR_CLOUDFLARE_ACCOUNT_ID",
+    "AI_GATEWAY_ID": "outreach-studio",
+    "AI_PROVIDER": "cloudflare_ai_gateway",
+    "DEFAULT_AI_MODEL": "google/gemini-3.5-flash",
+    "AVAILABLE_AI_MODELS": "google/gemini-3.5-flash,google/gemini-3-flash,@cf/meta/llama-3.3-70b-instruct-fp8-fast,@cf/meta/llama-3.1-8b-instruct-fast",
+    "ZOHO_MAIL_BASE": "https://mail.zoho.com",
+    "ZOHO_ACCOUNTS_BASE": "https://accounts.zoho.com",
+    "ZOHO_ACCOUNT_ID": "REPLACE_WITH_YOUR_ZOHO_MAIL_ACCOUNT_ID",
+    "FROM_EMAIL": "",
+    "FROM_NAME": "",
+    "OUTREACH_CC_EMAIL": "",
+    "PUBLIC_BASE_URL": "https://your-outreach-studio.workers.dev",
+    "PHYSICAL_ADDRESS": "",
+    "DAILY_SEND_CAP": "10",
+    "DOMAIN_WEEKLY_CAP": "2",
+    "SEND_WINDOW": "00:00-23:59",
+    "SEND_DAYS": "1,2,3,4,5,6,7",
+    "TIMEZONE": "UTC",
+    "SCORE_BATCH": "10",
+    "DRAFT_BATCH": "5",
+    "FIT_THRESHOLD": "40",
+    "DRY_RUN": "true",
+    "VISIBLE_UNSUBSCRIBE_URL_ENABLED": "false",
+    "REPLY_BASED_OPT_OUT_ENABLED": "true"
+  }
+  // Secrets (set with `wrangler secret put NAME`, mirror in .dev.vars for local):
+  //   DASHBOARD_PIN     - six-digit dashboard PIN; never use a shared/default PIN
+  //   API_KEY            - bearer token for the dashboard and n8n
+  //   CF_AI_TOKEN        - Cloudflare API token with AI Gateway + Workers AI permissions
+  //   ZOHO_CLIENT_ID     - Zoho Self Client
+  //   ZOHO_CLIENT_SECRET
+  //   ZOHO_REFRESH_TOKEN
+  //   N8N_WEBHOOK_SECRET - shared only with the n8n reply-ingest workflow
+  //   UNSUB_SECRET       - HMAC key for unsubscribe links (e.g. `openssl rand -hex 32`)
+}

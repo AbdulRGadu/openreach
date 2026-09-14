@@ -1,0 +1,63 @@
+{
+  "name": "Outreach Studio - Daily digest",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Daily digest\nWeekday-morning Telegram summary: drafts awaiting approval, sends, pipeline, and replies.\n1. Credentials: **Outreach API** (Header Auth), **Telegram Bot**.\n2. Replace `OUTREACH_BASE_URL` and the Telegram `chatId`.\n3. The schedule below is 08:30 in the n8n instance timezone. Adjust the hour and instance timezone for the workspace owner.",
+        "height": 220,
+        "width": 380
+      },
+      "id": "c3d4e5f6-0001-4000-8000-000000000001",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "30 8 * * 1-5" }]
+        }
+      },
+      "id": "c3d4e5f6-0002-4000-8000-000000000002",
+      "name": "Weekdays 08:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [440, 120]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "OUTREACH_BASE_URL/api/stats",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "c3d4e5f6-0003-4000-8000-000000000003",
+      "name": "GET /api/stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 120],
+      "credentials": { "httpHeaderAuth": { "name": "Outreach API" } }
+    },
+    {
+      "parameters": {
+        "chatId": "TELEGRAM_CHAT_ID",
+        "text": "=📬 Outreach Studio - daily digest\n\nDrafts awaiting approval: {{ $json.draftsAwaiting }}\nSends today so far: {{ $json.sendsToday }} / {{ $json.dailyCap }}\n{{ $json.sendUnknown > 0 ? '⚠ ' + $json.sendUnknown + ' send(s) need manual review\\n' : '' }}\nPipeline: new {{ $json.pipeline.new }} · scored {{ $json.pipeline.scored }} · drafted {{ $json.pipeline.drafted }} · queued {{ $json.pipeline.queued }} · sent {{ $json.pipeline.sent }} · replied {{ $json.pipeline.replied }}\n\nReplies last 7 days: {{ Object.entries($json.repliesLast7ByClass || {}).map(([k, v]) => k + ' ' + v).join(', ') || 'none' }}\n\nDashboard: OUTREACH_BASE_URL/admin",
+        "additionalFields": {}
+      },
+      "id": "c3d4e5f6-0004-4000-8000-000000000004",
+      "name": "Telegram digest",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, 120],
+      "credentials": { "telegramApi": { "name": "Telegram Bot" } }
+    }
+  ],
+  "connections": {
+    "Weekdays 08:30": { "main": [[{ "node": "GET /api/stats", "type": "main", "index": 0 }]] },
+    "GET /api/stats": { "main": [[{ "node": "Telegram digest", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {}
+}
