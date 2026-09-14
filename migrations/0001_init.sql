@@ -1,4 +1,4 @@
--- Centrisec Outreach: initial schema
+-- Initial schema
 -- Lead lifecycle: new -> scored -> drafted -> approved -> queued -> sent
 --   -> replied | bounced | unsubscribed | disqualified
 -- A rejected draft returns the lead to 'scored'.
