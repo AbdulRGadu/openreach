@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Connect Zoho Mail · Outreach Studio</title>
   <style>
-    :root { color-scheme: light; --ink:#17324d; --muted:#5d7185; --line:#dbe5ec; --accent:#0b7a75; --bg:#f5f8fa; }
+    :root { color-scheme: light; --ink:#17211f; --muted:#60706b; --line:#dbe4e0; --accent:#16735f; --bg:#f2f5f2; }
     * { box-sizing:border-box; }
-    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }
-    main { width:min(760px,calc(100% - 32px)); margin:38px auto; padding:30px; background:#fff; border:1px solid var(--line); border-radius:16px; }
-    h1 { margin:0 0 8px; line-height:1.15; }
-    h2 { margin:24px 0 8px; font-size:18px; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 "Avenir Next",Avenir,"Segoe UI",sans-serif; }
+    main { width:min(820px,calc(100% - 32px)); margin:clamp(20px,6vw,72px) auto; padding:clamp(26px,6vw,64px); background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 24px 70px rgba(23,33,31,.06); }
+    h1 { max-width:620px; margin:22px 0 12px; font-size:clamp(36px,6vw,58px); line-height:1.02; letter-spacing:-.045em; }
+    h2 { margin:38px 0 8px; padding-top:20px; border-top:1px solid var(--line); font-size:18px; }
     p,li { color:var(--muted); }
-    a { color:var(--accent); }
-    code { padding:2px 5px; background:#eef4f5; border-radius:4px; color:var(--ink); }
+    a { color:var(--accent); text-underline-offset:3px; }
+    a:focus-visible { outline:3px solid rgba(22,115,95,.25); outline-offset:3px; }
+    code { padding:2px 5px; background:#eef4f5; border-radius:4px; color:var(--ink); overflow-wrap:anywhere; word-break:break-word; }
+    li { padding-left:4px; }
     .note { padding:12px 14px; border-left:3px solid var(--accent); background:#f3faf8; }
   </style>
 </head>
